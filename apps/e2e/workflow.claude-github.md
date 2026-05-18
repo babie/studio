@@ -25,7 +25,7 @@ github:
   # NOTE: fine-grained PATs do not work with user-owned ProjectV2 (a known
   # GitHub limitation). Issue a classic PAT (ghp_...) with repo + project scope.
   project_owner: babie
-  project_number: 3
+  project_number: 4
   # assignee: me restricts the candidate set to project items where the
   # PAT owner is explicitly assigned. Make sure the issue carries that
   # assignee in the GitHub UI; project membership alone is not enough.
