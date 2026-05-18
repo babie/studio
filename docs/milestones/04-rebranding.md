@@ -16,8 +16,8 @@ ADR: [`0017-rebranding-to-studio.md`](../adr/0017-rebranding-to-studio.md)
 - Phase 4a 完了状態: `babie/studio` 初期コミット `bc0759a` (init: babie/studio monorepo) に集約。Phase 4a の `feat/m4-rebranding` ブランチはローカル限定で旧 `babie/concert` には push せず、rsync 経由で新リポジトリにフレッシュコミットされた
 - Phase 4b 完了タイミング: 2026-05-18 (ユーザーが mirror push → babie/studio 作成 → macOS rename → OrbStack volume tar 移行 → 新 DevContainer 起動を順次実施)
 - Phase 4c E2E 緑確認: 2026-05-18 (`pnpm test:e2e:claude-linear` / `pnpm test:e2e:claude-github` 双方 PASS、commit `61ed15e` 時点)
-- 旧 OrbStack ボリューム削除: ユーザー判断のソーク期間後 (Task 27 ユーザーアクション)
-- `babie/concert` GitHub 削除: ユーザー判断のソーク期間後 (Task 27 ユーザーアクション)
+- 旧 OrbStack ボリューム削除: 2026-05-18 (`babie-concert_home` / `babie-concert_nix` / `~/concert-home.tar.gz` を削除)
+- `babie/concert` GitHub 削除: 2026-05-18
 - `babie/concert-archive` (private mirror): 履歴参照用に残置
 
 ## 引っかかった点
