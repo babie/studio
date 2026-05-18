@@ -1,0 +1,20 @@
+name: ${COMPOSE_PROJECT_NAME:-studio}
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: dev
+    command: sleep infinity
+    env_file:
+      - path: ../.env.local
+        required: false
+    volumes:
+      - ..:/workspace:cached
+      - home:/home
+      - nix:/nix
+
+volumes:
+  home:
+  nix:

@@ -1,0 +1,4 @@
+{"method":"initialize","id":0,"params":{"capabilities":{"experimentalApi":true},"clientInfo":{"name":"manual-test","title":"Manual Test","version":"0.1.0"}}}
+{"method":"initialized","params":{}}
+{"method":"thread/start","id":1,"params":{"cwd":"/tmp"}}
+{"method":"turn/start","id":2,"params":{"threadId":"REPLACE_WITH_THREAD_ID","input":[{"type":"text","text":"Create a file at /tmp/cas-phase3-test.txt with the content 'hello phase3', then read it back with the Read tool, then cat it with bash. Report the final contents."}]}}

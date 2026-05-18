@@ -1,0 +1,38 @@
+# Monorepo-wide ignores. Per-app ignores are in apps/*/.gitignore.
+
+# pnpm workspace
+node_modules/
+.pnpm-store/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Claude Code (per-user local settings)
+.claude/settings.local.json
+
+# Logs
+*.log
+
+# Build outputs
+apps/e2e/dist/
+
+# E2E run artifacts
+apps/e2e/backend.log
+
+# DevContainer / Nix
+.env
+.env.local
+.direnv/
+.envrc.local
+
+# Third-party vendor docs — kept locally for reference, not redistributed
+# (originally tracked, removed in M4 Task 11 to keep public repo clean,
+# see ADR-0017 and docs/superpowers/specs/2026-05-18-m4-rebranding-design.md)
+docs/vendor/

@@ -1,0 +1,16 @@
+{
+  "linear": {
+    "issueKey": "CYFY-5",
+    "resetStateName": "Todo",
+    "workflowPath": "apps/e2e/workflow.claude-linear.md",
+    "timeoutSeconds": 300
+  },
+  "github": {
+    "repo": "babie/studio",
+    "issueNumber": 1,
+    "resetStateName": "Todo",
+    "statusFieldName": "Status",
+    "workflowPath": "apps/e2e/workflow.claude-github.md",
+    "timeoutSeconds": 300
+  }
+}

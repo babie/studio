@@ -1,0 +1,24 @@
+{
+  "name": "e2e",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "test:setup": "pnpm --filter claude-app-server build && pnpm --filter perform build && cd ../claude-app-server && pnpm link --global && cd ../perform && pnpm link --global && cd ../e2e && pnpm build",
+    "test": "pnpm test:claude-linear && pnpm test:claude-github",
+    "test:claude-linear": "node dist/claude-linear.mjs",
+    "test:claude-github": "node dist/claude-github.mjs"
+  },
+  "dependencies": {
+    "@praha/byethrow": "^0.11.2",
+    "js-yaml": "^4.1.1",
+    "valibot": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.7.0",
+    "tsdown": "^0.22.0"
+  }
+}
