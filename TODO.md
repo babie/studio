@@ -6,14 +6,6 @@
 
 ---
 
-# Milestone 4: リブランディング (進行中)
-
-詳細・チェックリスト: [`docs/superpowers/specs/2026-05-18-m4-rebranding-design.md`](docs/superpowers/specs/2026-05-18-m4-rebranding-design.md)
-
-実装プラン: [`docs/superpowers/plans/2026-05-18-m4-rebranding.md`](docs/superpowers/plans/2026-05-18-m4-rebranding.md)
-
----
-
 # Milestone 5 以降 (候補)
 
 下記は M4 完了後に改めて議論する。スキーマ・実装方針はその時点で決定する。
