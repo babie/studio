@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/state.ts
+// apps/perform/src/observability/state.ts
 import {
   type ObservabilityData,
   type ObservabilitySnapshot,

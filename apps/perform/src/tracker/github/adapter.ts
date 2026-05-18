@@ -1,4 +1,4 @@
-// apps/conductor/src/tracker/github/adapter.ts
+// apps/perform/src/tracker/github/adapter.ts
 import { Result } from "@praha/byethrow";
 import * as v from "valibot";
 import type { Logger } from "../../orchestrator/orchestrator.js";

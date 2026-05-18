@@ -1,4 +1,4 @@
-// apps/conductor/src/tracker/github/project-meta.ts
+// apps/perform/src/tracker/github/project-meta.ts
 import type { Result } from "@praha/byethrow";
 import * as v from "valibot";
 import type { TrackerError } from "../../domain/tracker-errors.js";

@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/runtime-config.ts
+// apps/perform/src/observability/runtime-config.ts
 export const MINIMUM_IDLE_RERENDER_MS = 1_000;
 export const THROUGHPUT_WINDOW_MS = 5_000;
 export const THROUGHPUT_GRAPH_WINDOW_MS = 600_000;

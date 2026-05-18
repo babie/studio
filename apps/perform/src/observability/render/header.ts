@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/render/header.ts
+// apps/perform/src/observability/render/header.ts
 //
 // Algorithm originally ported from apps/symphony/lib/symphony_elixir/status_dashboard.ex
 // (format_snapshot_content header section + format_rate_limits) — Elixir

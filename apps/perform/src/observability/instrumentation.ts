@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/instrumentation.ts
+// apps/perform/src/observability/instrumentation.ts
 import type { RateLimits } from "../domain/observability-snapshot.js";
 
 export type TurnEvent =

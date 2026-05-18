@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/dashboard.ts
+// apps/perform/src/observability/dashboard.ts
 import type { ObservabilityState } from "./state.js";
 import type { EventBus } from "./event-bus.js";
 import { formatSnapshot, type FormatRuntimeContext } from "./render/snapshot.js";

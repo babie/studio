@@ -1,4 +1,4 @@
-// apps/conductor/src/domain/config-errors.ts
+// apps/perform/src/domain/config-errors.ts
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 export type ConfigError =

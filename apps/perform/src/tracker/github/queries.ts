@@ -1,4 +1,4 @@
-// apps/conductor/src/tracker/github/queries.ts
+// apps/perform/src/tracker/github/queries.ts
 import * as v from "valibot";
 
 // ──────────────────────────────────────────────────────────────────────────

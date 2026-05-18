@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/render/project-link.ts
+// apps/perform/src/observability/render/project-link.ts
 //
 // Algorithm originally ported from apps/symphony/lib/symphony_elixir/status_dashboard.ex
 // (format_project_link_lines/0 and format_project_refresh_line/1) — Elixir

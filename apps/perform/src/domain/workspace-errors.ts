@@ -1,4 +1,4 @@
-// apps/conductor/src/domain/workspace-errors.ts
+// apps/perform/src/domain/workspace-errors.ts
 export type WorkspaceError =
   | Readonly<{ kind: "path-unsafe"; path: string }>
   | Readonly<{ kind: "create-failed"; path: string; cause: string }>

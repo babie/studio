@@ -1,4 +1,4 @@
-// apps/conductor/src/domain/prompt-errors.ts
+// apps/perform/src/domain/prompt-errors.ts
 export type PromptError =
   | Readonly<{ kind: "template-parse-failed"; cause: string }>
   | Readonly<{ kind: "render-failed"; cause: string; missingVariables?: ReadonlyArray<string> }>;

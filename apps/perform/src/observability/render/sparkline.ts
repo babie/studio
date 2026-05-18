@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/render/sparkline.ts
+// apps/perform/src/observability/render/sparkline.ts
 //
 // Algorithm originally ported from apps/symphony/lib/symphony_elixir/status_dashboard.ex
 // (tps_graph / throttled_tps / rolling_tps / update_token_samples) — Elixir

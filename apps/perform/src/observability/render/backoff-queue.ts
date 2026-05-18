@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/render/backoff-queue.ts
+// apps/perform/src/observability/render/backoff-queue.ts
 //
 // Algorithm originally ported from apps/symphony/lib/symphony_elixir/status_dashboard.ex
 // (format_retry_rows/1, format_retry_summary/1, next_in_words/1,

@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/render/offline.ts
+// apps/perform/src/observability/render/offline.ts
 //
 // Algorithm originally ported from the ":error" branch of
 // format_snapshot_content/2 in apps/symphony/lib/symphony_elixir/status_dashboard.ex

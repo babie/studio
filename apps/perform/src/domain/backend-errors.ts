@@ -1,4 +1,4 @@
-// apps/conductor/src/domain/backend-errors.ts
+// apps/perform/src/domain/backend-errors.ts
 export type BackendError =
   | Readonly<{ kind: "mock-forced-failure"; reason: string }>
   | Readonly<{ kind: "spawn-failed"; command: string; cause: string }>

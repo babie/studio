@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/event-bus.ts
+// apps/perform/src/observability/event-bus.ts
 import { EventEmitter } from "node:events";
 
 export type EventName = "stateChanged";

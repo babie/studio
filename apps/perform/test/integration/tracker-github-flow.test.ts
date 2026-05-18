@@ -1,4 +1,4 @@
-// apps/conductor/test/integration/tracker-github-flow.test.ts
+// apps/perform/test/integration/tracker-github-flow.test.ts
 import { describe, it, expect, vi } from "vitest";
 import * as v from "valibot";
 import { createGithubTracker } from "../../src/tracker/github/adapter.js";

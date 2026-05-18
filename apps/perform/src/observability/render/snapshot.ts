@@ -1,4 +1,4 @@
-// apps/conductor/src/observability/render/snapshot.ts
+// apps/perform/src/observability/render/snapshot.ts
 //
 // Composes all sub-renderers into a complete TUI frame.
 // Output was originally byte-for-byte calibrated against captured ANSI
