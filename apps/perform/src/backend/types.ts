@@ -36,7 +36,9 @@ export type BackendSession = Readonly<{
 
 export type Backend = Readonly<{
   readonly type: "claude" | "codex" | "mock";
-  startSession: (params: StartSessionParams) => Promise<Result.Result<BackendSession, BackendError>>;
+  startSession: (
+    params: StartSessionParams,
+  ) => Promise<Result.Result<BackendSession, BackendError>>;
 }>;
 
 if (import.meta.vitest) {

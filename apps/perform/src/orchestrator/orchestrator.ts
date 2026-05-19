@@ -79,18 +79,20 @@ if (import.meta.vitest) {
     terminalStates: ["Done"],
     doingState: "In Progress",
     doneState: "Done",
-    issues: [{
-      id: v2.parse(IssueId.schema, "M-1"),
-      identifier: v2.parse(IssueIdentifier.schema, "M-1"),
-      title: "one",
-      description: "",
-      state: v2.parse(ISN.schema, "Todo"),
-      priority: null,
-      createdAt: null,
-      assigneeId: null,
-      assignedToWorker: true,
-      blockedBy: [],
-    }],
+    issues: [
+      {
+        id: v2.parse(IssueId.schema, "M-1"),
+        identifier: v2.parse(IssueIdentifier.schema, "M-1"),
+        title: "one",
+        description: "",
+        state: v2.parse(ISN.schema, "Todo"),
+        priority: null,
+        createdAt: null,
+        assigneeId: null,
+        assignedToWorker: true,
+        blockedBy: [],
+      },
+    ],
   };
 
   describe("orchestrator/orchestrator (Phase 2)", () => {
@@ -100,7 +102,14 @@ if (import.meta.vitest) {
       const backend = createMockBackend({ type: "mock" });
       const logger: Logger = { info: () => {}, warn: () => {}, error: () => {} };
       const config: WorkflowConfig = {
-        agent: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 1, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+        agent: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 1,
+          maxTurns: 1,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
         tracker: TRACKER_CFG,
         prompt: "{{ issue.identifier }}",
         workspace: { root },
@@ -135,7 +144,14 @@ if (import.meta.vitest) {
         onIssueEnd: (id: string) => events.push(`end:${id}`),
       };
       const config: WorkflowConfig = {
-        agent: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 1, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+        agent: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 1,
+          maxTurns: 1,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
         tracker: TRACKER_CFG,
         prompt: "{{ issue.identifier }}",
         workspace: { root },
@@ -146,7 +162,11 @@ if (import.meta.vitest) {
       const ctrl = new AbortController();
       setTimeout(() => ctrl.abort(), 2000);
       const res = await runOrchestrator({
-        tracker, backend, config, logger, hooks,
+        tracker,
+        backend,
+        config,
+        logger,
+        hooks,
         signal: ctrl.signal,
       });
       if (res.type !== "Success") throw new Error("expected success");

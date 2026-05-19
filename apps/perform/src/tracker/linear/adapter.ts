@@ -4,12 +4,7 @@ import type { Logger } from "../../orchestrator/orchestrator.js";
 import type { TrackerError } from "../../domain/tracker-errors.js";
 import type { LinearTrackerConfig } from "../../domain/tracker-config.js";
 import { Sensitive } from "../../util/sensitive.js";
-import {
-  type Issue,
-  IssueId,
-  IssueIdentifier,
-  IssueStateName,
-} from "../../domain/issue.js";
+import { type Issue, IssueId, IssueIdentifier, IssueStateName } from "../../domain/issue.js";
 import type { Tracker } from "../types.js";
 import {
   DEFAULT_LINEAR_ENDPOINT,
@@ -36,9 +31,7 @@ import {
   UpdateStateResponseSchema,
 } from "./queries.js";
 
-type AssigneeFilter =
-  | Readonly<{ kind: "none" }>
-  | Readonly<{ kind: "id"; id: string }>;
+type AssigneeFilter = Readonly<{ kind: "none" }> | Readonly<{ kind: "id"; id: string }>;
 
 /** Resolves an assignee setting to either no filter or a concrete user id.
  *  - undefined → none
@@ -61,13 +54,12 @@ const resolveAssigneeFilter = async (
 
 /** Normalize a Linear GraphQL node into our domain `Issue`. */
 const toIssue = (node: LinearIssueNode, assigneeFilter: AssigneeFilter): Issue => {
-  const priority = node.priority != null && [1, 2, 3, 4].includes(node.priority)
-    ? (node.priority as 1 | 2 | 3 | 4)
-    : null;
+  const priority =
+    node.priority != null && [1, 2, 3, 4].includes(node.priority)
+      ? (node.priority as 1 | 2 | 3 | 4)
+      : null;
   const assigneeId = node.assignee?.id ?? null;
-  const assignedToWorker = assigneeFilter.kind === "none"
-    ? true
-    : assigneeId === assigneeFilter.id;
+  const assignedToWorker = assigneeFilter.kind === "none" ? true : assigneeId === assigneeFilter.id;
   return {
     id: v.parse(IssueId.schema, node.id),
     identifier: v.parse(IssueIdentifier.schema, node.identifier),
@@ -106,14 +98,20 @@ const listIssuesByStates = async (
       first: PAGE_SIZE,
       after: cursor,
     };
-    const r = assigneeFilter.kind === "id"
-      ? await linearQuery(clientDeps, LIST_ISSUES_BY_ASSIGNEE_QUERY, { ...baseVars, assigneeId: assigneeFilter.id }, ListIssuesResponseSchema)
-      : await linearQuery(clientDeps, LIST_ISSUES_QUERY, baseVars, ListIssuesResponseSchema);
+    const r =
+      assigneeFilter.kind === "id"
+        ? await linearQuery(
+            clientDeps,
+            LIST_ISSUES_BY_ASSIGNEE_QUERY,
+            { ...baseVars, assigneeId: assigneeFilter.id },
+            ListIssuesResponseSchema,
+          )
+        : await linearQuery(clientDeps, LIST_ISSUES_QUERY, baseVars, ListIssuesResponseSchema);
     if (r.type === "Failure") return r;
     for (const node of r.value.data.issues.nodes) acc.push(toIssue(node, assigneeFilter));
     if (!r.value.data.issues.pageInfo.hasNextPage) break;
     cursor = r.value.data.issues.pageInfo.endCursor;
-    if (cursor === null) break;  // defensive: hasNextPage but no cursor
+    if (cursor === null) break; // defensive: hasNextPage but no cursor
   }
   return { type: "Success", value: acc };
 };
@@ -128,15 +126,23 @@ const fetchIssuesByIds = async (
   const acc: Issue[] = [];
   for (let i = 0; i < uniq.length; i += PAGE_SIZE) {
     const batch = uniq.slice(i, i + PAGE_SIZE);
-    const r = await linearQuery(clientDeps, LIST_ISSUES_BY_IDS_QUERY, {
-      ids: batch,
-      first: batch.length,
-    }, ListIssuesByIdsResponseSchema);
+    const r = await linearQuery(
+      clientDeps,
+      LIST_ISSUES_BY_IDS_QUERY,
+      {
+        ids: batch,
+        first: batch.length,
+      },
+      ListIssuesByIdsResponseSchema,
+    );
     if (r.type === "Failure") return r;
     for (const node of r.value.data.issues.nodes) acc.push(toIssue(node, assigneeFilter));
   }
   const order = new Map(uniq.map((id, idx) => [id, idx] as const));
-  acc.sort((a, b) => (order.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (order.get(b.id) ?? Number.MAX_SAFE_INTEGER));
+  acc.sort(
+    (a, b) =>
+      (order.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (order.get(b.id) ?? Number.MAX_SAFE_INTEGER),
+  );
   return { type: "Success", value: acc };
 };
 
@@ -145,13 +151,21 @@ const createComment = async (
   issueId: string,
   body: string,
 ): Promise<Result.Result<void, TrackerError>> => {
-  const r = await linearMutation(clientDeps, CREATE_COMMENT_MUTATION, {
-    issueId,
-    body,
-  }, CreateCommentResponseSchema);
+  const r = await linearMutation(
+    clientDeps,
+    CREATE_COMMENT_MUTATION,
+    {
+      issueId,
+      body,
+    },
+    CreateCommentResponseSchema,
+  );
   if (r.type === "Failure") return r;
   if (r.value.data.commentCreate.success !== true) {
-    return { type: "Failure", error: { kind: "linear-graphql-errors", messages: ["commentCreate returned success=false"] } };
+    return {
+      type: "Failure",
+      error: { kind: "linear-graphql-errors", messages: ["commentCreate returned success=false"] },
+    };
   }
   return { type: "Success", value: undefined };
 };
@@ -164,10 +178,15 @@ const resolveStateId = async (
   issueId: string,
   stateName: string,
 ): Promise<Result.Result<string, TrackerError>> => {
-  const r = await linearQuery(clientDeps, RESOLVE_STATE_ID_QUERY, {
-    issueId,
-    stateName,
-  }, ResolveStateIdResponseSchema);
+  const r = await linearQuery(
+    clientDeps,
+    RESOLVE_STATE_ID_QUERY,
+    {
+      issueId,
+      stateName,
+    },
+    ResolveStateIdResponseSchema,
+  );
   if (r.type === "Failure") return r;
   const node = r.value.data.issue?.team.states.nodes[0];
   if (!node) {
@@ -181,13 +200,21 @@ const doUpdateState = async (
   issueId: string,
   stateId: string,
 ): Promise<Result.Result<void, TrackerError>> => {
-  const r = await linearMutation(clientDeps, UPDATE_STATE_MUTATION, {
-    issueId,
-    stateId,
-  }, UpdateStateResponseSchema);
+  const r = await linearMutation(
+    clientDeps,
+    UPDATE_STATE_MUTATION,
+    {
+      issueId,
+      stateId,
+    },
+    UpdateStateResponseSchema,
+  );
   if (r.type === "Failure") return r;
   if (r.value.data.issueUpdate.success !== true) {
-    return { type: "Failure", error: { kind: "linear-graphql-errors", messages: ["issueUpdate returned success=false"] } };
+    return {
+      type: "Failure",
+      error: { kind: "linear-graphql-errors", messages: ["issueUpdate returned success=false"] },
+    };
   }
   return { type: "Success", value: undefined };
 };
@@ -253,10 +280,8 @@ export const createLinearTracker = async (
         listIssuesByStates(clientDeps, config.projectSlug, config.activeStates, assigneeFilter),
       fetchIssuesByStates: (states) =>
         listIssuesByStates(clientDeps, config.projectSlug, states, assigneeFilter),
-      fetchIssueStatesByIds: (ids) =>
-        fetchIssuesByIds(clientDeps, ids, assigneeFilter),
-      createComment: (issueId, body) =>
-        createComment(clientDeps, issueId, body),
+      fetchIssueStatesByIds: (ids) => fetchIssuesByIds(clientDeps, ids, assigneeFilter),
+      createComment: (issueId, body) => createComment(clientDeps, issueId, body),
       updateIssueState: (issue, state) =>
         updateStateWithRetry(clientDeps, deps.logger, issue, state),
     },
@@ -285,32 +310,45 @@ if (import.meta.vitest) {
   describe("tracker/linear/adapter — viewer/assignee resolution", () => {
     it("does not call fetch when assignee is undefined", async () => {
       const fetchFn = vi.fn();
-      const r = await createLinearTracker(baseCfg(), { logger: silentLogger, fetch: fetchFn as any });
+      const r = await createLinearTracker(baseCfg(), {
+        logger: silentLogger,
+        fetch: fetchFn as any,
+      });
       if (r.type !== "Success") throw new Error("expected success");
       expect(fetchFn).not.toHaveBeenCalled();
     });
 
-    it("resolves assignee=\"me\" via viewer query exactly once", async () => {
-      const fetchFn = vi.fn(async () =>
-        new Response(JSON.stringify({ data: { viewer: { id: "user_me_id" } } }), { status: 200 })
+    it('resolves assignee="me" via viewer query exactly once', async () => {
+      const fetchFn = vi.fn(
+        async () =>
+          new Response(JSON.stringify({ data: { viewer: { id: "user_me_id" } } }), { status: 200 }),
       ) as unknown as typeof globalThis.fetch;
-      const r = await createLinearTracker(baseCfg({ assignee: "me" }), { logger: silentLogger, fetch: fetchFn });
+      const r = await createLinearTracker(baseCfg({ assignee: "me" }), {
+        logger: silentLogger,
+        fetch: fetchFn,
+      });
       if (r.type !== "Success") throw new Error("expected success");
       expect((fetchFn as any).mock.calls.length).toBe(1);
     });
 
     it("treats literal assignee value as id without calling viewer", async () => {
       const fetchFn = vi.fn();
-      const r = await createLinearTracker(baseCfg({ assignee: "user_abc" }), { logger: silentLogger, fetch: fetchFn as any });
+      const r = await createLinearTracker(baseCfg({ assignee: "user_abc" }), {
+        logger: silentLogger,
+        fetch: fetchFn as any,
+      });
       if (r.type !== "Success") throw new Error("expected success");
       expect(fetchFn).not.toHaveBeenCalled();
     });
 
     it("propagates Failure when viewer query fails", async () => {
-      const fetchFn = vi.fn(async () =>
-        new Response("nope", { status: 401 })
+      const fetchFn = vi.fn(
+        async () => new Response("nope", { status: 401 }),
       ) as unknown as typeof globalThis.fetch;
-      const r = await createLinearTracker(baseCfg({ assignee: "me" }), { logger: silentLogger, fetch: fetchFn });
+      const r = await createLinearTracker(baseCfg({ assignee: "me" }), {
+        logger: silentLogger,
+        fetch: fetchFn,
+      });
       if (r.type !== "Failure") throw new Error("expected failure");
       expect(r.error.kind).toBe("linear-http");
     });
@@ -318,35 +356,41 @@ if (import.meta.vitest) {
 
   describe("tracker/linear/adapter — Issue normalization", () => {
     it("toIssue maps description=null to empty string", () => {
-      const issue = __internal__.toIssue({
-        id: "id1",
-        identifier: "CYFY-5",
-        title: "t",
-        description: null,
-        state: { name: "Todo" },
-        priority: null,
-        createdAt: "2026-01-01T00:00:00Z",
-        assignee: null,
-      }, { kind: "none" });
+      const issue = __internal__.toIssue(
+        {
+          id: "id1",
+          identifier: "CYFY-5",
+          title: "t",
+          description: null,
+          state: { name: "Todo" },
+          priority: null,
+          createdAt: "2026-01-01T00:00:00Z",
+          assignee: null,
+        },
+        { kind: "none" },
+      );
       expect(issue.description).toBe("");
       expect(issue.identifier).toBe("CYFY-5");
       expect(issue.state).toBe("Todo");
     });
 
     it("toIssue populates priority, createdAt, assigneeId, assignedToWorker, blockedBy", () => {
-      const issue = __internal__.toIssue({
-        id: "id2",
-        identifier: "CYFY-6",
-        title: "t2",
-        description: "d",
-        state: { name: "In Progress" },
-        priority: 2,
-        createdAt: "2026-05-01T12:00:00Z",
-        assignee: { id: "user_42" },
-        inverseRelations: {
-          nodes: [{ type: "blocks", issue: { id: "id1", state: { name: "Todo" } } }],
+      const issue = __internal__.toIssue(
+        {
+          id: "id2",
+          identifier: "CYFY-6",
+          title: "t2",
+          description: "d",
+          state: { name: "In Progress" },
+          priority: 2,
+          createdAt: "2026-05-01T12:00:00Z",
+          assignee: { id: "user_42" },
+          inverseRelations: {
+            nodes: [{ type: "blocks", issue: { id: "id1", state: { name: "Todo" } } }],
+          },
         },
-      }, { kind: "id", id: "user_42" });
+        { kind: "id", id: "user_42" },
+      );
       expect(issue.priority).toBe(2);
       expect(issue.createdAt).toEqual(new Date("2026-05-01T12:00:00Z"));
       expect(issue.assigneeId).toBe("user_42");
@@ -356,16 +400,19 @@ if (import.meta.vitest) {
     });
 
     it("toIssue sets assignedToWorker=false when assignee does not match filter", () => {
-      const issue = __internal__.toIssue({
-        id: "id3",
-        identifier: "CYFY-7",
-        title: "t3",
-        description: "d",
-        state: { name: "Todo" },
-        priority: null,
-        createdAt: "2026-01-01T00:00:00Z",
-        assignee: { id: "user_other" },
-      }, { kind: "id", id: "user_42" });
+      const issue = __internal__.toIssue(
+        {
+          id: "id3",
+          identifier: "CYFY-7",
+          title: "t3",
+          description: "d",
+          state: { name: "Todo" },
+          priority: null,
+          createdAt: "2026-01-01T00:00:00Z",
+          assignee: { id: "user_other" },
+        },
+        { kind: "id", id: "user_42" },
+      );
       expect(issue.assignedToWorker).toBe(false);
     });
   });
@@ -384,7 +431,9 @@ if (import.meta.vitest) {
       blockedBy: [],
     } as const satisfies Issue;
 
-    const STATE_RESOLVE_OK = { data: { issue: { team: { states: { nodes: [{ id: "state_done" }] } } } } };
+    const STATE_RESOLVE_OK = {
+      data: { issue: { team: { states: { nodes: [{ id: "state_done" }] } } } },
+    };
     const UPDATE_OK = { data: { issueUpdate: { success: true } } };
     const UPDATE_FAIL = { data: { issueUpdate: { success: false } } };
 
@@ -425,9 +474,7 @@ if (import.meta.vitest) {
     });
 
     it("returns linear-state-not-found when team has no matching state (no retries)", async () => {
-      const fetchFn = makeFetch([
-        { data: { issue: { team: { states: { nodes: [] } } } } },
-      ]);
+      const fetchFn = makeFetch([{ data: { issue: { team: { states: { nodes: [] } } } } }]);
       const r = await createLinearTracker(baseCfg(), { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Success") throw new Error("expected success");
       const u = await r.value.updateIssueState(issueAtTodo, v.parse(IssueStateName.schema, "Done"));
@@ -447,14 +494,34 @@ if (import.meta.vitest) {
       }) as unknown as typeof globalThis.fetch;
     };
     const nodeOf = (id: string, identifier: string, state: string) => ({
-      id, identifier, title: "t", description: "d", state: { name: state },
-      priority: null, createdAt: "2026-01-01T00:00:00Z", assignee: null,
+      id,
+      identifier,
+      title: "t",
+      description: "d",
+      state: { name: state },
+      priority: null,
+      createdAt: "2026-01-01T00:00:00Z",
+      assignee: null,
     });
 
     it("fetchCandidateIssues returns flattened issues across pages (no assignee filter)", async () => {
       const fetchFn = makeFetch([
-        { data: { issues: { nodes: [nodeOf("a", "CYFY-1", "Todo")], pageInfo: { hasNextPage: true, endCursor: "c1" } } } },
-        { data: { issues: { nodes: [nodeOf("b", "CYFY-2", "Todo")], pageInfo: { hasNextPage: false, endCursor: null } } } },
+        {
+          data: {
+            issues: {
+              nodes: [nodeOf("a", "CYFY-1", "Todo")],
+              pageInfo: { hasNextPage: true, endCursor: "c1" },
+            },
+          },
+        },
+        {
+          data: {
+            issues: {
+              nodes: [nodeOf("b", "CYFY-2", "Todo")],
+              pageInfo: { hasNextPage: false, endCursor: null },
+            },
+          },
+        },
       ]);
       const r = await createLinearTracker(baseCfg(), { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Success") throw new Error("expected success");
@@ -471,7 +538,10 @@ if (import.meta.vitest) {
         { data: { viewer: { id: "user_me" } } },
         { data: { issues: { nodes: [], pageInfo: { hasNextPage: false, endCursor: null } } } },
       ]);
-      const r = await createLinearTracker(baseCfg({ assignee: "me" }), { logger: silentLogger, fetch: fetchFn });
+      const r = await createLinearTracker(baseCfg({ assignee: "me" }), {
+        logger: silentLogger,
+        fetch: fetchFn,
+      });
       if (r.type !== "Success") throw new Error("expected success");
       await r.value.fetchCandidateIssues();
       const issuesReqBody = JSON.parse((fetchFn as any).mock.calls[1][1].body);
@@ -480,7 +550,17 @@ if (import.meta.vitest) {
 
     it("fetchIssueStatesByIds preserves the requested id order", async () => {
       const fetchFn = makeFetch([
-        { data: { issues: { nodes: [nodeOf("c", "CYFY-3", "Done"), nodeOf("a", "CYFY-1", "Todo"), nodeOf("b", "CYFY-2", "InProgress")] } } },
+        {
+          data: {
+            issues: {
+              nodes: [
+                nodeOf("c", "CYFY-3", "Done"),
+                nodeOf("a", "CYFY-1", "Todo"),
+                nodeOf("b", "CYFY-2", "InProgress"),
+              ],
+            },
+          },
+        },
       ]);
       const r = await createLinearTracker(baseCfg(), { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Success") throw new Error("expected success");
@@ -494,9 +574,7 @@ if (import.meta.vitest) {
     });
 
     it("createComment returns Failure when success=false", async () => {
-      const fetchFn = makeFetch([
-        { data: { commentCreate: { success: false } } },
-      ]);
+      const fetchFn = makeFetch([{ data: { commentCreate: { success: false } } }]);
       const r = await createLinearTracker(baseCfg(), { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Success") throw new Error("expected success");
       const c = await r.value.createComment(v.parse(IssueId.schema, "id1"), "hi");

@@ -49,7 +49,9 @@ if (import.meta.vitest) {
     it("coalesces multiple emits within the debounce window", async () => {
       const bus = new EventBus(10);
       let count = 0;
-      bus.on("stateChanged", () => { count++; });
+      bus.on("stateChanged", () => {
+        count++;
+      });
       bus.emit("stateChanged");
       bus.emit("stateChanged");
       bus.emit("stateChanged");
@@ -60,7 +62,9 @@ if (import.meta.vitest) {
     it("off() unsubscribes", async () => {
       const bus = new EventBus(5);
       let count = 0;
-      const off = bus.on("stateChanged", () => { count++; });
+      const off = bus.on("stateChanged", () => {
+        count++;
+      });
       off();
       bus.emit("stateChanged");
       await new Promise((r) => setTimeout(r, 15));

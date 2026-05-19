@@ -18,8 +18,8 @@ describe("file-logger rotation", () => {
     await setTimeoutP(1000); // pino-roll flush + rotate
 
     const entries = await readdir(dir);
-    // Expect a current file plus at least one rotated sibling (e.g. rot.log.1)
-    const rotated = entries.filter((f) => f.startsWith("rot.log"));
+    // pino-roll v4 uses "Extension Last Format": rot.1.log, rot.2.log, ...
+    const rotated = entries.filter((f) => /^rot\.\d+\.log$/.test(f));
     expect(rotated.length).toBeGreaterThanOrEqual(2);
     expect(rotated.length).toBeLessThanOrEqual(4);
   });

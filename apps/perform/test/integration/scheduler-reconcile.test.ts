@@ -15,15 +15,23 @@ describe("scheduler reconcileRunning", () => {
     const issue = {
       id: v.parse(IssueId.schema, "A"),
       identifier: v.parse(IssueIdentifier.schema, "A"),
-      title: "t", description: "",
+      title: "t",
+      description: "",
       state: v.parse(IssueStateName.schema, "Todo"),
-      priority: null, createdAt: null, assigneeId: null, assignedToWorker: true, blockedBy: [],
+      priority: null,
+      createdAt: null,
+      assigneeId: null,
+      assignedToWorker: true,
+      blockedBy: [],
     };
     const doneIssue = { ...issue, state: v.parse(IssueStateName.schema, "Done") };
 
     let fetchCalls = 0;
     const tracker: Tracker = {
-      fetchCandidateIssues: async () => { fetchCalls += 1; return ok(fetchCalls === 1 ? [issue] : []); },
+      fetchCandidateIssues: async () => {
+        fetchCalls += 1;
+        return ok(fetchCalls === 1 ? [issue] : []);
+      },
       fetchIssuesByStates: async () => ok([]),
       fetchIssueStatesByIds: async () => ok([doneIssue]),
       createComment: async () => ok(undefined),
@@ -35,11 +43,26 @@ describe("scheduler reconcileRunning", () => {
       tracker,
       backend: createMockBackend({ type: "mock", delayMs: 30 }),
       config: {
-        agent: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 1,
-          maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
-        tracker: { kind: "memory", activeStates: ["Todo"], terminalStates: ["Done"],
-          doingState: "In Progress", doneState: "Done", issues: [] },
-        prompt: "Hi", polling: { intervalMs: 100 }, logging: null, workspace: { root },
+        agent: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 1,
+          maxTurns: 1,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
+        tracker: {
+          kind: "memory",
+          activeStates: ["Todo"],
+          terminalStates: ["Done"],
+          doingState: "In Progress",
+          doneState: "Done",
+          issues: [],
+        },
+        prompt: "Hi",
+        polling: { intervalMs: 100 },
+        logging: null,
+        workspace: { root },
         observability: { dashboardEnabled: false, refreshMs: 1000, renderIntervalMs: 16 },
       } as any,
       logger: { info: () => {}, warn: () => {}, error: () => {} },

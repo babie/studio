@@ -8,7 +8,11 @@ describe("codex turn/completed usage parsing", () => {
       usage: { input_tokens: 1024, output_tokens: 512, total_tokens: 1536 },
       finishReason: "stop",
     };
-    expect(extractCodexUsage(params)).toEqual({ inputTokens: 1024, outputTokens: 512, totalTokens: 1536 });
+    expect(extractCodexUsage(params)).toEqual({
+      inputTokens: 1024,
+      outputTokens: 512,
+      totalTokens: 1536,
+    });
   });
 
   it("returns null for a claude payload without usage", () => {

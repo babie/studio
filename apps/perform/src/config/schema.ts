@@ -53,7 +53,9 @@ const AgentYamlSchema = v.object({
   max_turns: v.pipe(v.number(), v.integer(), v.minValue(1)),
   max_retry_backoff_ms: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
   agent_session_stall_timeout_ms: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
-  max_concurrent_agents_by_state: v.optional(v.record(v.string(), v.pipe(v.number(), v.integer(), v.minValue(1)))),
+  max_concurrent_agents_by_state: v.optional(
+    v.record(v.string(), v.pipe(v.number(), v.integer(), v.minValue(1))),
+  ),
 });
 
 const ClaudeBlockYamlSchema = v.object({
@@ -98,10 +100,14 @@ const IssueYamlSchema = v.object({
   created_at: v.optional(v.string()), // ISO-8601; transformed to Date in buildIssue
   assignee_id: v.optional(v.nullable(v.string())),
   assigned_to_worker: v.optional(v.boolean()),
-  blocked_by: v.optional(v.array(v.object({
-    id: IssueId.schema,
-    state: IssueStateName.schema,
-  }))),
+  blocked_by: v.optional(
+    v.array(
+      v.object({
+        id: IssueId.schema,
+        state: IssueStateName.schema,
+      }),
+    ),
+  ),
 });
 
 const MemoryBlockYamlSchema = v.object({
@@ -187,14 +193,26 @@ const buildBackend = (yaml: WorkflowYaml): Result.Result<BackendConfig, Workflow
   switch (yaml.agent.type) {
     case "claude": {
       if (!yaml.claude) {
-        return { type: "Failure", error: { kind: "invariant-violation", cause: "agent.type=claude requires a claude: block" } };
+        return {
+          type: "Failure",
+          error: {
+            kind: "invariant-violation",
+            cause: "agent.type=claude requires a claude: block",
+          },
+        };
       }
       const out: ClaudeBackend = { type: "claude", command: yaml.claude.command };
       return { type: "Success", value: out };
     }
     case "codex": {
       if (!yaml.codex) {
-        return { type: "Failure", error: { kind: "invariant-violation", cause: "agent.type=codex requires a `codex:` block" } };
+        return {
+          type: "Failure",
+          error: {
+            kind: "invariant-violation",
+            cause: "agent.type=codex requires a `codex:` block",
+          },
+        };
       }
       const out: CodexBackend = {
         type: "codex",
@@ -237,8 +255,7 @@ const buildAgent = (yaml: WorkflowYaml): Result.Result<AgentConfig, WorkflowYaml
 };
 
 /** Returns a default absolute path for the log file (cwd + log/perform.log). */
-const defaultLoggingPath = (): string =>
-  nodePath.resolve(process.cwd(), "log/perform.log");
+const defaultLoggingPath = (): string => nodePath.resolve(process.cwd(), "log/perform.log");
 
 const buildPolling = (yaml: WorkflowYaml): PollingConfig => ({
   intervalMs: yaml.polling?.interval_ms ?? 5_000,
@@ -246,7 +263,10 @@ const buildPolling = (yaml: WorkflowYaml): PollingConfig => ({
 
 const buildLogging = (
   yaml: WorkflowYaml,
-): Result.Result<LoggingConfig, WorkflowYamlInvariant | Readonly<{ kind: "logging-path-not-absolute"; path: string }>> => {
+): Result.Result<
+  LoggingConfig,
+  WorkflowYamlInvariant | Readonly<{ kind: "logging-path-not-absolute"; path: string }>
+> => {
   const loggingFile = yaml.logging?.file ?? {};
   const loggingPath = loggingFile.path ?? defaultLoggingPath();
   if (!nodePath.isAbsolute(loggingPath)) {
@@ -293,17 +313,35 @@ const buildTracker = (yaml: WorkflowYaml): Result.Result<TrackerConfig, Workflow
     }
     case "linear": {
       if (!yaml.linear) {
-        return { type: "Failure", error: { kind: "invariant-violation", cause: "tracker.kind=linear requires a `linear:` block" } };
+        return {
+          type: "Failure",
+          error: {
+            kind: "invariant-violation",
+            cause: "tracker.kind=linear requires a `linear:` block",
+          },
+        };
       }
       const apiKeyR = resolveEnvRef(yaml.linear.api_key);
       if (apiKeyR.type === "Failure") {
-        return { type: "Failure", error: { kind: "invariant-violation", cause: `linear.api_key: ${apiKeyR.error.kind} ($${apiKeyR.error.var})` } };
+        return {
+          type: "Failure",
+          error: {
+            kind: "invariant-violation",
+            cause: `linear.api_key: ${apiKeyR.error.kind} ($${apiKeyR.error.var})`,
+          },
+        };
       }
       let assignee: string | undefined;
       if (yaml.linear.assignee !== undefined) {
         const r = resolveEnvRef(yaml.linear.assignee);
         if (r.type === "Failure") {
-          return { type: "Failure", error: { kind: "invariant-violation", cause: `linear.assignee: ${r.error.kind} ($${r.error.var})` } };
+          return {
+            type: "Failure",
+            error: {
+              kind: "invariant-violation",
+              cause: `linear.assignee: ${r.error.kind} ($${r.error.var})`,
+            },
+          };
         }
         assignee = r.value;
       }
@@ -319,17 +357,35 @@ const buildTracker = (yaml: WorkflowYaml): Result.Result<TrackerConfig, Workflow
     }
     case "github": {
       if (!yaml.github) {
-        return { type: "Failure", error: { kind: "invariant-violation", cause: "tracker.kind=github requires a `github:` block" } };
+        return {
+          type: "Failure",
+          error: {
+            kind: "invariant-violation",
+            cause: "tracker.kind=github requires a `github:` block",
+          },
+        };
       }
       const apiKeyR = resolveEnvRef(yaml.github.api_key);
       if (apiKeyR.type === "Failure") {
-        return { type: "Failure", error: { kind: "invariant-violation", cause: `github.api_key: ${apiKeyR.error.kind} ($${apiKeyR.error.var})` } };
+        return {
+          type: "Failure",
+          error: {
+            kind: "invariant-violation",
+            cause: `github.api_key: ${apiKeyR.error.kind} ($${apiKeyR.error.var})`,
+          },
+        };
       }
       let assignee: string | undefined;
       if (yaml.github.assignee !== undefined) {
         const r = resolveEnvRef(yaml.github.assignee);
         if (r.type === "Failure") {
-          return { type: "Failure", error: { kind: "invariant-violation", cause: `github.assignee: ${r.error.kind} ($${r.error.var})` } };
+          return {
+            type: "Failure",
+            error: {
+              kind: "invariant-violation",
+              cause: `github.assignee: ${r.error.kind} ($${r.error.var})`,
+            },
+          };
         }
         assignee = r.value;
       }
@@ -391,7 +447,10 @@ export const parseWorkflowYaml = (
   // buildLogging failure propagates through the union without any cast.
   const yamlResult = schemaResult(WorkflowYamlSchema)(raw);
   if (yamlResult.type === "Failure") {
-    return { type: "Failure", error: { kind: "schema-violation", issues: yamlResult.error.issues } };
+    return {
+      type: "Failure",
+      error: { kind: "schema-violation", issues: yamlResult.error.issues },
+    };
   }
   const yaml = yamlResult.value;
   const agentR = buildAgent(yaml);
@@ -432,9 +491,7 @@ if (import.meta.vitest) {
           done_state: "Done",
         },
         memory: {
-          issues: [
-            { id: "M-1", identifier: "M-1", title: "t", description: "d", state: "Todo" },
-          ],
+          issues: [{ id: "M-1", identifier: "M-1", title: "t", description: "d", state: "Todo" }],
         },
       };
       const result = v.safeParse(WorkflowYamlSchema, raw);
@@ -617,7 +674,7 @@ if (import.meta.vitest) {
       expect(r.value.tracker.apiKey.reveal()).toBe("ghp_literal");
     });
 
-    it("treats github.assignee=\"me\" as literal (no env expansion)", () => {
+    it('treats github.assignee="me" as literal (no env expansion)', () => {
       const raw = {
         agent: { type: "claude", max_concurrent_agents: 1, max_turns: 1 },
         claude: { command: "claude-app-server" },
@@ -674,14 +731,19 @@ if (import.meta.vitest) {
         agent: { type: "mock", max_concurrent_agents: 1, max_turns: 1 },
         tracker: { kind: "memory", active_states: ["Todo"], terminal_states: ["Done"] },
         memory: {
-          issues: [{
-            id: "M-1", identifier: "M-1", title: "t", state: "Todo",
-            priority: 2,
-            created_at: "2026-01-01T00:00:00Z",
-            assignee_id: "u_42",
-            assigned_to_worker: true,
-            blocked_by: [{ id: "M-2", state: "In Progress" }],
-          }],
+          issues: [
+            {
+              id: "M-1",
+              identifier: "M-1",
+              title: "t",
+              state: "Todo",
+              priority: 2,
+              created_at: "2026-01-01T00:00:00Z",
+              assignee_id: "u_42",
+              assigned_to_worker: true,
+              blocked_by: [{ id: "M-2", state: "In Progress" }],
+            },
+          ],
         },
         workspace: { root: "/tmp/ws" },
       });
@@ -745,7 +807,9 @@ if (import.meta.vitest) {
     it("honours custom max_concurrent_agents_by_state", () => {
       const r = parseWorkflowYaml({
         agent: {
-          type: "mock", max_concurrent_agents: 5, max_turns: 1,
+          type: "mock",
+          max_concurrent_agents: 5,
+          max_turns: 1,
           max_concurrent_agents_by_state: { "In Progress": 2 },
         },
         tracker: { kind: "memory", active_states: ["Todo"], terminal_states: ["Done"] },

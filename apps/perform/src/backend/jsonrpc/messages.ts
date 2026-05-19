@@ -56,12 +56,16 @@ export const normalizeInitializeResult = (raw: Record<string, unknown>): Initial
   // claude-app-server: { userAgent: "claude-app-server/0.1.0", ... }
   if (typeof raw.userAgent === "string") {
     const match = raw.userAgent.match(/^([^/]+)\/(\S+)/);
-    return { serverInfo: { name: match?.[1] ?? "claude-app-server", version: match?.[2] ?? "unknown" } };
+    return {
+      serverInfo: { name: match?.[1] ?? "claude-app-server", version: match?.[2] ?? "unknown" },
+    };
   }
   // If it has serverInfo already (e.g. from a future spec-conformant server)
   if (typeof raw.serverInfo === "object" && raw.serverInfo !== null) {
     const si = raw.serverInfo as Record<string, unknown>;
-    return { serverInfo: { name: String(si.name ?? "unknown"), version: String(si.version ?? "unknown") } };
+    return {
+      serverInfo: { name: String(si.name ?? "unknown"), version: String(si.version ?? "unknown") },
+    };
   }
   return { serverInfo: { name: "unknown", version: "unknown" } };
 };
@@ -73,7 +77,9 @@ export type ThreadStartResult = {
 };
 
 /** Normalize the raw thread/start result from any server into our canonical shape. */
-export const normalizeThreadStartResult = (raw: Record<string, unknown>): ThreadStartResult | null => {
+export const normalizeThreadStartResult = (
+  raw: Record<string, unknown>,
+): ThreadStartResult | null => {
   // Codex and claude-app-server: { thread: { id: "..." } }
   if (typeof raw.thread === "object" && raw.thread !== null) {
     const t = raw.thread as Record<string, unknown>;
@@ -169,10 +175,7 @@ export const isJsonRpcResponse = (msg: unknown): msg is JsonRpcResponse =>
 export const isJsonRpcNotification = (
   msg: unknown,
 ): msg is { jsonrpc: "2.0"; method: string; params?: unknown } =>
-  typeof msg === "object" &&
-  msg !== null &&
-  "method" in msg &&
-  !("id" in msg);
+  typeof msg === "object" && msg !== null && "method" in msg && !("id" in msg);
 
 // codex `turn/completed` includes a `usage` field with input_tokens, output_tokens, total_tokens.
 // claude-app-server omits usage entirely. We use safeParse so claude-path payloads return null.
@@ -184,7 +187,11 @@ const CodexUsageSchema = v.object({
   }),
 });
 
-export type CodexUsage = Readonly<{ inputTokens: number; outputTokens: number; totalTokens: number }>;
+export type CodexUsage = Readonly<{
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+}>;
 
 export const extractCodexUsage = (params: unknown): CodexUsage | null => {
   const r = v.safeParse(CodexUsageSchema, params);
@@ -232,8 +239,12 @@ if (import.meta.vitest) {
     });
     it("isJsonRpcResponse / isJsonRpcNotification discriminate envelopes", () => {
       expect(isJsonRpcResponse({ jsonrpc: "2.0", id: 1, result: {} })).toBe(true);
-      expect(isJsonRpcResponse({ jsonrpc: "2.0", id: 1, error: { code: -1, message: "x" } })).toBe(true);
-      expect(isJsonRpcNotification({ jsonrpc: "2.0", method: "thread/started", params: {} })).toBe(true);
+      expect(isJsonRpcResponse({ jsonrpc: "2.0", id: 1, error: { code: -1, message: "x" } })).toBe(
+        true,
+      );
+      expect(isJsonRpcNotification({ jsonrpc: "2.0", method: "thread/started", params: {} })).toBe(
+        true,
+      );
       expect(isJsonRpcNotification({ jsonrpc: "2.0", id: 1, result: {} })).toBe(false);
     });
   });
@@ -244,7 +255,9 @@ if (import.meta.vitest) {
       expect(extractCodexUsage({ params: "x" })).toBeNull();
     });
     it("parses codex usage with total_tokens", () => {
-      const u = extractCodexUsage({ usage: { input_tokens: 100, output_tokens: 50, total_tokens: 150 } });
+      const u = extractCodexUsage({
+        usage: { input_tokens: 100, output_tokens: 50, total_tokens: 150 },
+      });
       expect(u).toEqual({ inputTokens: 100, outputTokens: 50, totalTokens: 150 });
     });
     it("defaults total_tokens to in + out when absent", () => {

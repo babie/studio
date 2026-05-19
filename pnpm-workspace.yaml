@@ -1,2 +1,4 @@
 packages:
   - "apps/*"
+overrides:
+  '@anthropic-ai/sdk@>=0.79.0 <0.91.1': '>=0.91.1'

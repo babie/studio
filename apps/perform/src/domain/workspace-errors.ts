@@ -14,7 +14,12 @@ if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest;
   describe("domain/workspace-errors", () => {
     it("discriminates hook-failed", () => {
-      const e: WorkspaceError = { kind: "hook-failed", hook: "after_create", exitCode: 1, stderrTail: "x" };
+      const e: WorkspaceError = {
+        kind: "hook-failed",
+        hook: "after_create",
+        exitCode: 1,
+        stderrTail: "x",
+      };
       expect(e.hook).toBe("after_create");
     });
   });

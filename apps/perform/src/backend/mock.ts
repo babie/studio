@@ -8,15 +8,22 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 
 export const createMockBackend = (config: MockBackend): Backend => ({
   type: "mock",
-  startSession: async (_params: StartSessionParams): Promise<Result.Result<BackendSession, BackendError>> => {
+  startSession: async (
+    _params: StartSessionParams,
+  ): Promise<Result.Result<BackendSession, BackendError>> => {
     let resolveExit!: (info: SessionExitInfo) => void;
-    const exitPromise = new Promise<SessionExitInfo>((res) => { resolveExit = res; });
+    const exitPromise = new Promise<SessionExitInfo>((res) => {
+      resolveExit = res;
+    });
     const session: BackendSession = {
       runTurn: async () => {
         if (config.delayMs && config.delayMs > 0) await sleep(config.delayMs);
         if (config.exitMidTurn) {
           resolveExit({ code: 1, signal: null });
-          return { type: "Failure", error: { kind: "session-exited-mid-turn", exitCode: 1, signal: null } };
+          return {
+            type: "Failure",
+            error: { kind: "session-exited-mid-turn", exitCode: 1, signal: null },
+          };
         }
         if (config.forceFail) {
           return {
@@ -26,8 +33,12 @@ export const createMockBackend = (config: MockBackend): Backend => ({
         }
         return { type: "Success", value: { completed: true } };
       },
-      shutdown: async () => { resolveExit({ code: 0, signal: null }); },
-      interrupt: async () => { resolveExit({ code: null, signal: "SIGTERM" }); },
+      shutdown: async () => {
+        resolveExit({ code: 0, signal: null });
+      },
+      interrupt: async () => {
+        resolveExit({ code: null, signal: "SIGTERM" });
+      },
       exitPromise,
     };
     return { type: "Success", value: session };
@@ -51,7 +62,14 @@ if (import.meta.vitest) {
     assignedToWorker: true,
     blockedBy: [],
   } as const satisfies Issue;
-  const agentConfig = { backend: { type: "mock" as const }, maxConcurrentAgents: 1, maxTurns: 1, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} };
+  const agentConfig = {
+    backend: { type: "mock" as const },
+    maxConcurrentAgents: 1,
+    maxTurns: 1,
+    maxRetryBackoffMs: 300_000,
+    agentSessionStallTimeoutMs: 1_800_000,
+    maxConcurrentAgentsByState: {},
+  };
   const ctrl = new AbortController();
 
   describe("backend/mock", () => {
@@ -114,7 +132,13 @@ if (import.meta.vitest) {
       const b = createMockBackend({ type: "mock", exitMidTurn: true });
       const s = await b.startSession({ workspace: "/tmp", issue, agentConfig });
       if (s.type !== "Success") throw new Error("expected success");
-      const r = await s.value.runTurn({ prompt: "x", turnNumber: 1, maxTurns: 1, signal: new AbortController().signal, onNotification: () => {} });
+      const r = await s.value.runTurn({
+        prompt: "x",
+        turnNumber: 1,
+        maxTurns: 1,
+        signal: new AbortController().signal,
+        onNotification: () => {},
+      });
       expect(r.type).toBe("Failure");
       if (r.type === "Failure") expect(r.error.kind).toBe("session-exited-mid-turn");
       const info = await s.value.exitPromise;

@@ -11,7 +11,10 @@ describe("dashboard lifecycle", () => {
     const bus = new EventBus(2);
     state.attachBus(bus);
     const d = new Dashboard({
-      state, bus, refreshMs: 1000, renderIntervalMs: 16,
+      state,
+      bus,
+      refreshMs: 1000,
+      renderIntervalMs: 16,
       runtimeContext: { projectLink: { kind: "memory" }, maxAgents: 2 },
       renderFn: (s) => writes.push(s),
       getTerminalColumns: () => 115,
@@ -30,7 +33,10 @@ describe("dashboard lifecycle", () => {
     state.attachBus(bus);
     let clock = 1_000_000;
     const d = new Dashboard({
-      state, bus, refreshMs: 1000, renderIntervalMs: 16,
+      state,
+      bus,
+      refreshMs: 1000,
+      renderIntervalMs: 16,
       runtimeContext: { projectLink: { kind: "memory" }, maxAgents: 2 },
       renderFn: (s) => writes.push(s),
       getTerminalColumns: () => 115,

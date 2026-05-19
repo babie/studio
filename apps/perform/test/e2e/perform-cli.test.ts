@@ -15,7 +15,15 @@ describe("e2e: perform CLI with workflow.mock-memory.md", () => {
   }, 60_000);
 
   it("prints expected state-transition log and exits 0", async () => {
-    const child = spawn("node", [binPath, "--i-understand-that-this-will-be-running-without-the-usual-guardrails", examplePath], { stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(
+      "node",
+      [
+        binPath,
+        "--i-understand-that-this-will-be-running-without-the-usual-guardrails",
+        examplePath,
+      ],
+      { stdio: ["ignore", "pipe", "pipe"] },
+    );
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (c) => (stdout += c.toString()));

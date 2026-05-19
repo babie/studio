@@ -13,10 +13,7 @@ import { ANSI, colorize } from "./format.js";
 import { renderHeader } from "./header.js";
 import { renderProjectLinkLines, renderProjectRefreshLine } from "./project-link.js";
 import type { ProjectLinkInput } from "./project-link.js";
-import {
-  renderRunningLines,
-  runningEventWidth,
-} from "./running-table.js";
+import { renderRunningLines, runningEventWidth } from "./running-table.js";
 import { renderBackoffRows, closingBorder } from "./backoff-queue.js";
 import { renderOffline } from "./offline.js";
 import type { ObservabilitySnapshot } from "../../domain/observability-snapshot.js";
@@ -107,12 +104,10 @@ if (import.meta.vitest) {
     // Sanity 1: error snapshot contains "snapshot unavailable" and ends with "╰─"
     // -------------------------------------------------------------------------
     it('error snapshot contains "snapshot unavailable" and ends with "╰─"', () => {
-      const result = formatSnapshot(
-        { type: "error" },
-        0,
-        115,
-        { projectLink: { kind: "linear", projectSlug: null }, maxAgents: 2 },
-      );
+      const result = formatSnapshot({ type: "error" }, 0, 115, {
+        projectLink: { kind: "linear", projectSlug: null },
+        maxAgents: 2,
+      });
       expect(result).toContain("snapshot unavailable");
       expect(result.endsWith("╰─")).toBe(true);
     });

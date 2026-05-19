@@ -28,7 +28,7 @@ export type MockBackend = Readonly<{
   type: "mock";
   delayMs?: number;
   forceFail?: boolean;
-  exitMidTurn?: boolean;  // test-only — README does NOT advertise
+  exitMidTurn?: boolean; // test-only — README does NOT advertise
 }>;
 
 export type BackendConfig = ClaudeBackend | CodexBackend | MockBackend;

@@ -17,10 +17,7 @@ import type {
 const CLIENT_NAME = "perform";
 const CLIENT_VERSION = "0.1.0";
 
-export const createCodexBackend = (
-  config: CodexBackend,
-  logger: Logger,
-): Backend => ({
+export const createCodexBackend = (config: CodexBackend, logger: Logger): Backend => ({
   type: "codex",
   startSession: async (
     params: StartSessionParams,
@@ -41,14 +38,20 @@ export const createCodexBackend = (
     });
     if (transportR.type === "Failure") return transportR;
     const client = new JsonRpcSubprocessClient({ transport: transportR.value.transport, logger });
-    logger.info(`[backend codex] spawn pid=${transportR.value.pid} command=${JSON.stringify(config.command)}`);
+    logger.info(
+      `[backend codex] spawn pid=${transportR.value.pid} command=${JSON.stringify(config.command)}`,
+    );
 
-    const init = await client.initialize({ clientInfo: { name: CLIENT_NAME, version: CLIENT_VERSION } });
+    const init = await client.initialize({
+      clientInfo: { name: CLIENT_NAME, version: CLIENT_VERSION },
+    });
     if (init.type === "Failure") {
       await client.shutdown();
       return init;
     }
-    logger.info(`[backend codex] initialize complete server=${init.value.serverInfo.name}@${init.value.serverInfo.version}`);
+    logger.info(
+      `[backend codex] initialize complete server=${init.value.serverInfo.name}@${init.value.serverInfo.version}`,
+    );
 
     const thread = await client.startThread({
       cwd: params.workspace,
@@ -63,7 +66,9 @@ export const createCodexBackend = (
     logger.info(`[backend codex] thread-started ${thread.value.threadId}`);
 
     let resolveExit!: (info: SessionExitInfo) => void;
-    const exitPromise = new Promise<SessionExitInfo>((res) => { resolveExit = res; });
+    const exitPromise = new Promise<SessionExitInfo>((res) => {
+      resolveExit = res;
+    });
     transportR.value.transport.onClose((info) => resolveExit(info));
 
     const session: BackendSession = {
@@ -78,7 +83,9 @@ export const createCodexBackend = (
         });
         const elapsed = Date.now() - t0;
         if (r.type === "Failure") return r;
-        logger.info(`[backend codex] turn-completed turn=${rp.turnNumber}/${rp.maxTurns} (${elapsed}ms)`);
+        logger.info(
+          `[backend codex] turn-completed turn=${rp.turnNumber}/${rp.maxTurns} (${elapsed}ms)`,
+        );
         return { type: "Success", value: { completed: true } };
       },
       shutdown: async (opts) => {

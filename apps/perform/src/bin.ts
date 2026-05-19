@@ -12,7 +12,9 @@ const program = new Command()
 
 program.action(async (workflow: string) => {
   const opts = program.opts() as Record<string, unknown>;
-  const flagKey = GUARDRAIL_FLAG.replace(/^--/, "").replace(/-([a-z])/g, (_m, c) => c.toUpperCase());
+  const flagKey = GUARDRAIL_FLAG.replace(/^--/, "").replace(/-([a-z])/g, (_m, c) =>
+    c.toUpperCase(),
+  );
   const dashboardEnabled = opts.dashboard !== false;
   await runCli({
     workflowPath: workflow,

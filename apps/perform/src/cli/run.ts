@@ -18,7 +18,8 @@ import { NULL_HOOKS, type ObservabilityHooks } from "../observability/instrument
 import type { FormatRuntimeContext } from "../observability/render/snapshot.js";
 import type { ProjectLinkInput } from "../observability/render/project-link.js";
 
-export const GUARDRAIL_FLAG = "--i-understand-that-this-will-be-running-without-the-usual-guardrails";
+export const GUARDRAIL_FLAG =
+  "--i-understand-that-this-will-be-running-without-the-usual-guardrails";
 
 export type RunCliOptions = Readonly<{
   workflowPath: string;
@@ -169,7 +170,9 @@ export const runCli = async (opts: RunCliOptions): Promise<void> => {
   const earlyLogger = createStdLogger();
 
   if (!opts.guardrailAccepted) {
-    earlyLogger.error(`Refusing to start. Pass ${GUARDRAIL_FLAG} to acknowledge that perform runs agents without per-tool prompts.`);
+    earlyLogger.error(
+      `Refusing to start. Pass ${GUARDRAIL_FLAG} to acknowledge that perform runs agents without per-tool prompts.`,
+    );
     process.exit(2);
   }
 
@@ -295,9 +298,18 @@ if (import.meta.vitest) {
       [{ kind: "github-response-invalid", issues: ["a: b"] }, /did not match schema.*a: b/],
       [{ kind: "github-network", cause: "ECONN" }, /GitHub network error: ECONN/],
       [{ kind: "github-project-not-found", owner: "babie", number: 3 }, /owner=babie number=3/],
-      [{ kind: "github-status-field-not-found", fieldName: "Status" }, /SingleSelect field named "Status"/],
-      [{ kind: "github-status-option-not-found", optionName: "Done", available: ["Todo"] }, /option "Done" not found \(available: Todo\)/],
-      [{ kind: "github-no-project-item", issueIdentifier: "babie/studio#1" }, /issue babie\/studio#1/],
+      [
+        { kind: "github-status-field-not-found", fieldName: "Status" },
+        /SingleSelect field named "Status"/,
+      ],
+      [
+        { kind: "github-status-option-not-found", optionName: "Done", available: ["Todo"] },
+        /option "Done" not found \(available: Todo\)/,
+      ],
+      [
+        { kind: "github-no-project-item", issueIdentifier: "babie/studio#1" },
+        /issue babie\/studio#1/,
+      ],
       [{ kind: "github-config", cause: "warmup failed" }, /GitHub config error: warmup failed/],
     ];
     for (const [err, pattern] of cases) {

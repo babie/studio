@@ -25,7 +25,9 @@ export type LinearClientError = Extract<
 // tracker-timeout is a cross-cutting error (not specific to Linear vs GitHub)
 // so it lives in TrackerError rather than LinearClientError. We alias the union
 // here for use in linearQuery / linearMutation return types.
-export type LinearClientResultError = LinearClientError | Extract<TrackerError, { kind: "tracker-timeout" }>;
+export type LinearClientResultError =
+  | LinearClientError
+  | Extract<TrackerError, { kind: "tracker-timeout" }>;
 
 const GraphQLErrorEnvelopeSchema = v.object({
   errors: v.optional(v.array(v.object({ message: v.string() }))),
@@ -78,7 +80,10 @@ const linearGraphqlRequest = async <T>(
 
   if (!res.ok) {
     const body = await res.text().catch(() => "<unreadable body>");
-    return { type: "Failure", error: { kind: "linear-http", status: res.status, bodyExcerpt: truncate(body) } };
+    return {
+      type: "Failure",
+      error: { kind: "linear-http", status: res.status, bodyExcerpt: truncate(body) },
+    };
   }
 
   let json: unknown;
@@ -87,7 +92,12 @@ const linearGraphqlRequest = async <T>(
   } catch (err) {
     return {
       type: "Failure",
-      error: { kind: "linear-response-invalid", issues: [`<root>: failed to parse JSON: ${err instanceof Error ? err.message : String(err)}`] },
+      error: {
+        kind: "linear-response-invalid",
+        issues: [
+          `<root>: failed to parse JSON: ${err instanceof Error ? err.message : String(err)}`,
+        ],
+      },
     };
   }
 
@@ -95,7 +105,10 @@ const linearGraphqlRequest = async <T>(
   if (envelope.success && envelope.output.errors && envelope.output.errors.length > 0) {
     return {
       type: "Failure",
-      error: { kind: "linear-graphql-errors", messages: envelope.output.errors.map((e) => e.message) },
+      error: {
+        kind: "linear-graphql-errors",
+        messages: envelope.output.errors.map((e) => e.message),
+      },
     };
   }
 
@@ -141,8 +154,12 @@ if (import.meta.vitest) {
 
   describe("tracker/linear/client", () => {
     it("returns Success on 200 + matching schema", async () => {
-      const fetchFn = vi.fn(async () =>
-        new Response(JSON.stringify({ data: { ok: true } }), { status: 200, headers: { "content-type": "application/json" } })
+      const fetchFn = vi.fn(
+        async () =>
+          new Response(JSON.stringify({ data: { ok: true } }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
       ) as unknown as typeof globalThis.fetch;
       const r = await linearQuery(baseDeps(fetchFn), "query Q { ok }", {}, DUMMY_SCHEMA);
       if (r.type !== "Success") throw new Error("expected success");
@@ -150,8 +167,8 @@ if (import.meta.vitest) {
     });
 
     it("returns linear-http on non-2xx", async () => {
-      const fetchFn = vi.fn(async () =>
-        new Response("not authorized", { status: 401 })
+      const fetchFn = vi.fn(
+        async () => new Response("not authorized", { status: 401 }),
       ) as unknown as typeof globalThis.fetch;
       const r = await linearQuery(baseDeps(fetchFn), "q", {}, DUMMY_SCHEMA);
       if (r.type !== "Failure") throw new Error("expected failure");
@@ -163,8 +180,9 @@ if (import.meta.vitest) {
     });
 
     it("returns linear-graphql-errors on errors envelope", async () => {
-      const fetchFn = vi.fn(async () =>
-        new Response(JSON.stringify({ errors: [{ message: "bad query" }] }), { status: 200 })
+      const fetchFn = vi.fn(
+        async () =>
+          new Response(JSON.stringify({ errors: [{ message: "bad query" }] }), { status: 200 }),
       ) as unknown as typeof globalThis.fetch;
       const r = await linearQuery(baseDeps(fetchFn), "q", {}, DUMMY_SCHEMA);
       if (r.type !== "Failure") throw new Error("expected failure");
@@ -173,8 +191,8 @@ if (import.meta.vitest) {
     });
 
     it("returns linear-response-invalid when schema mismatches", async () => {
-      const fetchFn = vi.fn(async () =>
-        new Response(JSON.stringify({ data: { ok: "nope" } }), { status: 200 })
+      const fetchFn = vi.fn(
+        async () => new Response(JSON.stringify({ data: { ok: "nope" } }), { status: 200 }),
       ) as unknown as typeof globalThis.fetch;
       const r = await linearQuery(baseDeps(fetchFn), "q", {}, DUMMY_SCHEMA);
       if (r.type !== "Failure") throw new Error("expected failure");

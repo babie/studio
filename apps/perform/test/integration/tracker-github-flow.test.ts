@@ -89,7 +89,13 @@ describe("integration: GitHub tracker flow", () => {
     const fetchFn = makeFetch([
       { json: { data: { user: { projectV2: projectV2OK } } } },
       { json: { data: { viewer: { login: "babie" } } } },
-      { json: pollPage([{ id: "PVTI_1", content: issueContent("I_1", 1), state: "Todo" }], false, null) },
+      {
+        json: pollPage(
+          [{ id: "PVTI_1", content: issueContent("I_1", 1), state: "Todo" }],
+          false,
+          null,
+        ),
+      },
       { json: { data: { updateProjectV2ItemFieldValue: { clientMutationId: null } } } },
     ]);
     const t = await createGithubTracker(cfg, { logger: silentLogger, fetch: fetchFn });
@@ -122,7 +128,13 @@ describe("integration: GitHub tracker flow", () => {
       { json: { data: { user: null } } },
       { json: { data: { organization: { projectV2: projectV2OK } } } },
       { json: { data: { viewer: { login: "babie" } } } },
-      { json: pollPage([{ id: "PVTI_1", content: issueContent("I_1", 1), state: "Todo" }], false, null) },
+      {
+        json: pollPage(
+          [{ id: "PVTI_1", content: issueContent("I_1", 1), state: "Todo" }],
+          false,
+          null,
+        ),
+      },
     ]);
     const t = await createGithubTracker(cfg, { logger: silentLogger, fetch: fetchFn });
     if (t.type !== "Success") throw new Error("expected success");

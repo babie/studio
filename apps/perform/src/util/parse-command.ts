@@ -71,7 +71,9 @@ export const parseCommandLine = (line: string): string[] => {
     i += 1;
   }
   if (inSingle || inDouble) {
-    throw new TypeError(`parseCommandLine: unterminated ${inSingle ? "single" : "double"} quote in: ${line}`);
+    throw new TypeError(
+      `parseCommandLine: unterminated ${inSingle ? "single" : "double"} quote in: ${line}`,
+    );
   }
   if (started) out.push(cur);
   return out;

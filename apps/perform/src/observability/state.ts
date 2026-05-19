@@ -40,12 +40,14 @@ export class ObservabilityState implements ObservabilityHooks {
     }
     const totals: CodexTotals = {
       ...this.codexTotals,
-      secondsRunning:
-        this.startTimeMs == null ? 0 : Math.floor((now - this.startTimeMs) / 1000),
+      secondsRunning: this.startTimeMs == null ? 0 : Math.floor((now - this.startTimeMs) / 1000),
     };
     const data: ObservabilityData = {
-      running, retrying: [...this.retrying.values()],
-      codexTotals: totals, rateLimits: this.rateLimits, polling: this.polling,
+      running,
+      retrying: [...this.retrying.values()],
+      codexTotals: totals,
+      rateLimits: this.rateLimits,
+      polling: this.polling,
     };
     return { type: "ok", data };
   }
@@ -53,15 +55,21 @@ export class ObservabilityState implements ObservabilityHooks {
   // ─── ObservabilityHooks ───
 
   onIssueStart(
-    issueId: string, identifier: string, state: string,
-    pid: number | null, workspacePath: string | null,
+    issueId: string,
+    identifier: string,
+    state: string,
+    pid: number | null,
+    workspacePath: string | null,
   ): void {
     const now = new Date();
     if (this.startTimeMs == null) this.startTimeMs = now.getTime();
     const existing = this.running.get(issueId);
     const entry: RunningEntry = {
-      issueId, identifier, state,
-      workerHost: null, workspacePath,
+      issueId,
+      identifier,
+      state,
+      workerHost: null,
+      workspacePath,
       sessionId: existing?.sessionId ?? null,
       codexAppServerPid: pid ?? existing?.codexAppServerPid ?? null,
       codexInputTokens: existing?.codexInputTokens ?? 0,
@@ -100,7 +108,11 @@ export class ObservabilityState implements ObservabilityHooks {
         next = { ...next, lastCodexEvent: event.itemType };
         break;
       case "agent-message":
-        next = { ...next, lastCodexMessage: previewMessage(event.text), lastCodexEvent: "agent message" };
+        next = {
+          ...next,
+          lastCodexMessage: previewMessage(event.text),
+          lastCodexEvent: "agent message",
+        };
         break;
       case "command-execution":
         next = { ...next, lastCodexEvent: `cmd: ${event.command}` };
@@ -137,8 +149,11 @@ export class ObservabilityState implements ObservabilityHooks {
     const existing = this.retrying.get(issueId);
     const identifier = existing?.identifier ?? this.running.get(issueId)?.identifier ?? null;
     this.retrying.set(issueId, {
-      issueId, attempt, dueInMs: Math.max(0, dueAtMs - Date.now()),
-      identifier, error,
+      issueId,
+      attempt,
+      dueInMs: Math.max(0, dueAtMs - Date.now()),
+      identifier,
+      error,
       workerHost: null,
       workspacePath: this.running.get(issueId)?.workspacePath ?? null,
     });
@@ -179,7 +194,10 @@ if (import.meta.vitest) {
     it("turn-completed with usage adds to per-entry and global totals", () => {
       const s = new ObservabilityState();
       s.onIssueStart("id1", "M-1", "Todo", 1, "/tmp/x");
-      s.onTurnEvent("id1", { kind: "turn-completed", usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 } });
+      s.onTurnEvent("id1", {
+        kind: "turn-completed",
+        usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+      });
       const snap = s.getSnapshot();
       if (snap.type !== "ok") return;
       expect(snap.data.codexTotals.totalTokens).toBe(150);

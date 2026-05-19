@@ -18,7 +18,10 @@ if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest;
   describe("domain/orchestrator-errors", () => {
     it("nests sub-errors by kind", () => {
-      const e: OrchestratorError = { kind: "workspace", error: { kind: "create-failed", path: "/x", cause: "perm" } };
+      const e: OrchestratorError = {
+        kind: "workspace",
+        error: { kind: "create-failed", path: "/x", cause: "perm" },
+      };
       expect(e.kind).toBe("workspace");
     });
     it("supports guardrail-missing", () => {

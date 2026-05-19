@@ -9,11 +9,7 @@ import {
   THROUGHPUT_GRAPH_WINDOW_MS,
   DEFAULT_TERMINAL_COLUMNS,
 } from "./runtime-config.js";
-import {
-  type TokenSample,
-  throttledTps,
-  updateTokenSamples,
-} from "./render/sparkline.js";
+import { type TokenSample, throttledTps, updateTokenSamples } from "./render/sparkline.js";
 
 export type DashboardOptions = Readonly<{
   state: ObservabilityState;
@@ -66,9 +62,18 @@ export class Dashboard {
   stop(): void {
     if (!this.running) return;
     this.running = false;
-    if (this.tickTimer) { clearInterval(this.tickTimer); this.tickTimer = null; }
-    if (this.flushTimer) { clearTimeout(this.flushTimer); this.flushTimer = null; }
-    if (this.busOff) { this.busOff(); this.busOff = null; }
+    if (this.tickTimer) {
+      clearInterval(this.tickTimer);
+      this.tickTimer = null;
+    }
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
+    if (this.busOff) {
+      this.busOff();
+      this.busOff = null;
+    }
     this.opts.bus.flush();
     if (this.pendingContent != null) this.writeRender(this.pendingContent, this.now());
     this.renderFn(ANSI.cursorShow + "\n");
@@ -79,10 +84,19 @@ export class Dashboard {
     const snapshot = this.opts.state.getSnapshot(now);
     const currentTokens = totalTokens(snapshot);
     this.tokenSamples = updateTokenSamples(
-      this.tokenSamples, now, currentTokens, THROUGHPUT_WINDOW_MS, THROUGHPUT_GRAPH_WINDOW_MS,
+      this.tokenSamples,
+      now,
+      currentTokens,
+      THROUGHPUT_WINDOW_MS,
+      THROUGHPUT_GRAPH_WINDOW_MS,
     );
     const { second, value: tps } = throttledTps(
-      this.lastTpsSecond, this.lastTpsValue, now, this.tokenSamples, currentTokens, THROUGHPUT_WINDOW_MS,
+      this.lastTpsSecond,
+      this.lastTpsValue,
+      now,
+      this.tokenSamples,
+      currentTokens,
+      THROUGHPUT_WINDOW_MS,
     );
     this.lastTpsSecond = second;
     this.lastTpsValue = tps;
@@ -91,7 +105,12 @@ export class Dashboard {
       this.lastRenderedAtMs != null && now - this.lastRenderedAtMs >= MINIMUM_IDLE_RERENDER_MS;
     if (fingerprint === this.lastSnapshotFingerprint && !idleRerender) return;
     this.lastSnapshotFingerprint = fingerprint;
-    const content = formatSnapshot(snapshot, tps, this.getTerminalColumns(), this.opts.runtimeContext);
+    const content = formatSnapshot(
+      snapshot,
+      tps,
+      this.getTerminalColumns(),
+      this.opts.runtimeContext,
+    );
     this.enqueueRender(content, now);
   }
 
@@ -112,7 +131,8 @@ export class Dashboard {
 
   private scheduleFlush(now: number): void {
     if (this.flushTimer != null) return;
-    const since = this.lastRenderedAtMs == null ? this.opts.renderIntervalMs : now - this.lastRenderedAtMs;
+    const since =
+      this.lastRenderedAtMs == null ? this.opts.renderIntervalMs : now - this.lastRenderedAtMs;
     const delay = Math.max(1, this.opts.renderIntervalMs - since);
     this.flushTimer = setTimeout(() => {
       this.flushTimer = null;
@@ -141,7 +161,10 @@ if (import.meta.vitest) {
       const bus = new EventBus(2);
       state.attachBus(bus);
       const d = new Dashboard({
-        state, bus, refreshMs: 1000, renderIntervalMs: 16,
+        state,
+        bus,
+        refreshMs: 1000,
+        renderIntervalMs: 16,
         runtimeContext: { projectLink: { kind: "memory" }, maxAgents: 2 },
         renderFn: (s) => writes.push(s),
         getTerminalColumns: () => 115,
@@ -160,7 +183,10 @@ if (import.meta.vitest) {
       state.attachBus(bus);
       let clock = 1_000_000;
       const d = new Dashboard({
-        state, bus, refreshMs: 1000, renderIntervalMs: 16,
+        state,
+        bus,
+        refreshMs: 1000,
+        renderIntervalMs: 16,
         runtimeContext: { projectLink: { kind: "memory" }, maxAgents: 2 },
         renderFn: (s) => writes.push(s),
         getTerminalColumns: () => 115,

@@ -27,8 +27,10 @@
 
           shellHook = ''
             # pnpm の global store を /home/dev 配下に固定
+            # pnpm 11 以降は global バイナリが $PNPM_HOME/bin 配下に置かれる。
+            # pnpm 10 互換のため $PNPM_HOME 自体も残す。
             export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
+            export PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH"
           '';
         };
 

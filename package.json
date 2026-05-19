@@ -13,12 +13,7 @@
     "test:e2e": "pnpm --filter e2e test:setup && pnpm --filter e2e test",
     "test:e2e:claude-linear": "pnpm --filter e2e test:claude-linear",
     "test:e2e:claude-github": "pnpm --filter e2e test:claude-github",
-    "dev:install": "cd apps/claude-app-server && pnpm link --global && cd ../perform && pnpm link --global",
-    "dev:uninstall": "pnpm uninstall -g claude-app-server || true; pnpm uninstall -g perform || true"
-  },
-  "pnpm": {
-    "overrides": {
-      "@anthropic-ai/sdk@>=0.79.0 <0.91.1": ">=0.91.1"
-    }
+    "dev:install": "cd apps/claude-app-server && pnpm add -g . && cd ../perform && pnpm add -g .",
+    "dev:uninstall": "pnpm remove -g claude-app-server || true; pnpm remove -g perform || true"
   }
 }

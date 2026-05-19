@@ -16,9 +16,7 @@ export const createMemoryTracker = (config: MemoryTrackerConfig): Tracker => {
     fetchCandidateIssues: async () => ok(store.map((i) => ({ ...i }))),
     fetchIssuesByStates: async (states) => {
       const wanted = new Set(states.map(normalize));
-      return ok(
-        store.filter((i) => wanted.has(normalize(i.state))).map((i) => ({ ...i })),
-      );
+      return ok(store.filter((i) => wanted.has(normalize(i.state))).map((i) => ({ ...i })));
     },
     fetchIssueStatesByIds: async (ids) => {
       const wanted = new Set(ids);

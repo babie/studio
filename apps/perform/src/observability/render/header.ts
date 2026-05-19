@@ -9,7 +9,11 @@
 // retired alongside symphony in Phase 7).
 
 import { ANSI, colorize, formatCount, formatRuntimeSeconds, formatTps } from "./format.js";
-import type { CodexTotals, RateLimits, RateLimitInfo } from "../../domain/observability-snapshot.js";
+import type {
+  CodexTotals,
+  RateLimits,
+  RateLimitInfo,
+} from "../../domain/observability-snapshot.js";
 
 export type HeaderInput = Readonly<{
   agentCount: number;

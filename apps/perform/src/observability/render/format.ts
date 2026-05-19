@@ -14,8 +14,7 @@ export const ANSI = {
   cursorShow: "\x1b[?25h",
 } as const;
 
-export const colorize = (text: string, color: string): string =>
-  `${color}${text}${ANSI.reset}`;
+export const colorize = (text: string, color: string): string => `${color}${text}${ANSI.reset}`;
 
 /** Format an integer with comma-separated thousands (matches symphony format_count/1).
  *  Examples: 999 → "999", 1234 → "1,234", 1234567 → "1,234,567". */
@@ -83,7 +82,8 @@ if (import.meta.vitest) {
     it("formatTps: 0 → 0", () => expect(formatTps(0)).toBe("0"));
     it("formatTps: 13.71 → 13 (truncated)", () => expect(formatTps(13.71)).toBe("13"));
     it("formatTps: 25.4 → 25 (truncated)", () => expect(formatTps(25.4)).toBe("25"));
-    it("formatTps: 1234.9 → 1,234 (truncated + comma)", () => expect(formatTps(1234.9)).toBe("1,234"));
+    it("formatTps: 1234.9 → 1,234 (truncated + comma)", () =>
+      expect(formatTps(1234.9)).toBe("1,234"));
     // truncate
     it("truncate: short stays", () => expect(truncate("ab", 5)).toBe("ab"));
     it("truncate: long truncated with …", () => expect(truncate("abcdef", 4)).toBe("abc…"));

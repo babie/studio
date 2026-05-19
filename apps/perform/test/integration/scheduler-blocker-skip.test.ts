@@ -12,17 +12,24 @@ describe("scheduler blocker skip", () => {
     const blocked = {
       id: v.parse(IssueId.schema, "A"),
       identifier: v.parse(IssueIdentifier.schema, "A"),
-      title: "t", description: "",
+      title: "t",
+      description: "",
       state: v.parse(IssueStateName.schema, "Todo"),
-      priority: null, createdAt: null, assigneeId: null, assignedToWorker: true,
+      priority: null,
+      createdAt: null,
+      assigneeId: null,
+      assignedToWorker: true,
       blockedBy: [blocker],
     };
     const out = selectDispatchable({
       candidates: [blocked],
       activeStates: [v.parse(IssueStateName.schema, "Todo")],
       terminalStates: [v.parse(IssueStateName.schema, "Done")],
-      running: new Set(), claimed: new Set(),
-      maxConcurrentAgents: 5, maxConcurrentAgentsByState: {}, runningCountByState: {},
+      running: new Set(),
+      claimed: new Set(),
+      maxConcurrentAgents: 5,
+      maxConcurrentAgentsByState: {},
+      runningCountByState: {},
     });
     expect(out).toEqual([]);
     expect(isBlockerSkippable(blocked as any, [v.parse(IssueStateName.schema, "Done")])).toBe(true);
@@ -36,17 +43,24 @@ describe("scheduler blocker skip", () => {
     const blocked = {
       id: v.parse(IssueId.schema, "A"),
       identifier: v.parse(IssueIdentifier.schema, "A"),
-      title: "t", description: "",
+      title: "t",
+      description: "",
       state: v.parse(IssueStateName.schema, "Todo"),
-      priority: null, createdAt: null, assigneeId: null, assignedToWorker: true,
+      priority: null,
+      createdAt: null,
+      assigneeId: null,
+      assignedToWorker: true,
       blockedBy: [blocker],
     };
     const out = selectDispatchable({
       candidates: [blocked],
       activeStates: [v.parse(IssueStateName.schema, "Todo")],
       terminalStates: [v.parse(IssueStateName.schema, "Done")],
-      running: new Set(), claimed: new Set(),
-      maxConcurrentAgents: 5, maxConcurrentAgentsByState: {}, runningCountByState: {},
+      running: new Set(),
+      claimed: new Set(),
+      maxConcurrentAgents: 5,
+      maxConcurrentAgentsByState: {},
+      runningCountByState: {},
     });
     expect(out.length).toBe(1);
   });

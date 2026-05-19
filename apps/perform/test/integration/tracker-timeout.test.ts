@@ -16,7 +16,12 @@ describe("tracker timeout (Linear)", () => {
     }) as unknown as typeof globalThis.fetch;
 
     const r = await linearQuery(
-      { endpoint: "https://api.linear.app/graphql", apiKey: Sensitive.of("k"), fetch: fetchFn, timeoutMs: 50 },
+      {
+        endpoint: "https://api.linear.app/graphql",
+        apiKey: Sensitive.of("k"),
+        fetch: fetchFn,
+        timeoutMs: 50,
+      },
       "query Q { ok }",
       {},
       DUMMY_SCHEMA,
@@ -37,7 +42,12 @@ describe("tracker timeout (GitHub)", () => {
       return new Response("{}", { status: 200 });
     }) as unknown as typeof globalThis.fetch;
     const r = await githubQuery(
-      { endpoint: "https://api.github.com/graphql", apiKey: Sensitive.of("k"), fetch: fetchFn, timeoutMs: 50 },
+      {
+        endpoint: "https://api.github.com/graphql",
+        apiKey: Sensitive.of("k"),
+        fetch: fetchFn,
+        timeoutMs: 50,
+      },
       "query Q { ok }",
       {},
       DUMMY_SCHEMA,

@@ -88,7 +88,10 @@ export class Scheduler {
   async run(): Promise<RunSummary> {
     const pollMs = this.input.config.polling.intervalMs;
     const abortP = new Promise<void>((res) => {
-      if (this.input.signal.aborted) { res(); return; }
+      if (this.input.signal.aborted) {
+        res();
+        return;
+      }
       this.input.signal.addEventListener("abort", () => res(), { once: true });
     });
 
@@ -161,7 +164,9 @@ export class Scheduler {
     // 2. fetch candidates
     const candR = await this.input.tracker.fetchCandidateIssues();
     if (candR.type === "Failure") {
-      this.input.logger.warn(`[scheduler] fetchCandidateIssues failed: ${JSON.stringify(candR.error)}`);
+      this.input.logger.warn(
+        `[scheduler] fetchCandidateIssues failed: ${JSON.stringify(candR.error)}`,
+      );
       return;
     }
     for (const i of candR.value) this.totalSeen.add(String(i.id));
@@ -213,12 +218,18 @@ export class Scheduler {
     const ids = Array.from(this.running.keys()) as IssueId[];
     const r = await this.input.tracker.fetchIssueStatesByIds(ids);
     if (r.type === "Failure") {
-      this.input.logger.warn(`[scheduler] reconcileRunning: tracker fetch failed: ${JSON.stringify(r.error)}`);
+      this.input.logger.warn(
+        `[scheduler] reconcileRunning: tracker fetch failed: ${JSON.stringify(r.error)}`,
+      );
       return;
     }
     const seen = new Set<string>();
-    const terminalSet = new Set(this.input.config.tracker.terminalStates.map((s) => s.toLowerCase().trim()));
-    const activeSet = new Set(this.input.config.tracker.activeStates.map((s) => s.toLowerCase().trim()));
+    const terminalSet = new Set(
+      this.input.config.tracker.terminalStates.map((s) => s.toLowerCase().trim()),
+    );
+    const activeSet = new Set(
+      this.input.config.tracker.activeStates.map((s) => s.toLowerCase().trim()),
+    );
 
     for (const refreshed of r.value) {
       const id = String(refreshed.id);
@@ -228,7 +239,9 @@ export class Scheduler {
       const stateKey = refreshed.state.toLowerCase().trim();
 
       if (terminalSet.has(stateKey)) {
-        this.input.logger.info(`[scheduler] ${refreshed.identifier} reached terminal state ${refreshed.state}; stopping`);
+        this.input.logger.info(
+          `[scheduler] ${refreshed.identifier} reached terminal state ${refreshed.state}; stopping`,
+        );
         this.terminateRunning(id, /*cleanupWorkspace=*/ true);
         continue;
       }
@@ -238,7 +251,9 @@ export class Scheduler {
         continue;
       }
       if (!activeSet.has(stateKey)) {
-        this.input.logger.info(`[scheduler] ${refreshed.identifier} non-active state ${refreshed.state}; stopping`);
+        this.input.logger.info(
+          `[scheduler] ${refreshed.identifier} non-active state ${refreshed.state}; stopping`,
+        );
         this.terminateRunning(id, /*cleanupWorkspace=*/ false);
         continue;
       }
@@ -249,7 +264,9 @@ export class Scheduler {
     // Issues that disappeared from tracker results — treat as stale, release.
     for (const id of this.running.keys()) {
       if (!seen.has(id)) {
-        this.input.logger.warn(`[scheduler] running issue ${id} not visible from tracker; releasing claim`);
+        this.input.logger.warn(
+          `[scheduler] running issue ${id} not visible from tracker; releasing claim`,
+        );
         this.terminateRunning(id, /*cleanupWorkspace=*/ false);
       }
     }
@@ -269,8 +286,12 @@ export class Scheduler {
     const id = String(issue.id);
     const startedAt = new Date();
     this.running.set(id, {
-      issueId: issue.id, identifier: issue.identifier, issue,
-      startedAt, lastActivityAt: startedAt, retryAttempt: this.retryAttempts.get(id)?.attempt ?? 0,
+      issueId: issue.id,
+      identifier: issue.identifier,
+      issue,
+      startedAt,
+      lastActivityAt: startedAt,
+      retryAttempt: this.retryAttempts.get(id)?.attempt ?? 0,
     });
     this.retryAttempts.delete(id);
     this.input.logger.info(`[orchestrator] picked ${issue.identifier} (${issue.state})`);
@@ -286,8 +307,12 @@ export class Scheduler {
         agentConfig: this.input.config.agent,
         ...(this.input.config.workspace ? { workspaceConfig: this.input.config.workspace } : {}),
         ...(this.input.config.hooks ? { hooksConfig: this.input.config.hooks } : {}),
-        ...(this.input.config.tracker.doingState ? { doingState: this.input.config.tracker.doingState as IssueStateName } : {}),
-        ...(this.input.config.tracker.doneState ? { doneState: this.input.config.tracker.doneState as IssueStateName } : {}),
+        ...(this.input.config.tracker.doingState
+          ? { doingState: this.input.config.tracker.doingState as IssueStateName }
+          : {}),
+        ...(this.input.config.tracker.doneState
+          ? { doneState: this.input.config.tracker.doneState as IssueStateName }
+          : {}),
         // activeStates/terminalStates are validated as IssueStateName at parse time; the brand isn't preserved through TrackerConfig.
         terminalStates: this.input.config.tracker.terminalStates as ReadonlyArray<IssueStateName>,
         activeStates: this.input.config.tracker.activeStates as ReadonlyArray<IssueStateName>,
@@ -354,7 +379,9 @@ export class Scheduler {
     if (prev) clearTimeout(prev.timerRef);
     const retryToken = Symbol("retry");
     const dueAtMs = Date.now() + delayMs;
-    const timerRef = setTimeout(() => { void this.handleRetry(id, retryToken); }, delayMs);
+    const timerRef = setTimeout(() => {
+      void this.handleRetry(id, retryToken);
+    }, delayMs);
     this.retryAttempts.set(id, {
       issueId: issue.id,
       identifier: issue.identifier,
@@ -389,8 +416,12 @@ export class Scheduler {
       return;
     }
     const refreshed = candR.value.find((i) => String(i.id) === id);
-    const terminalSet = new Set(this.input.config.tracker.terminalStates.map((s) => s.toLowerCase().trim()));
-    const activeSet = new Set(this.input.config.tracker.activeStates.map((s) => s.toLowerCase().trim()));
+    const terminalSet = new Set(
+      this.input.config.tracker.terminalStates.map((s) => s.toLowerCase().trim()),
+    );
+    const activeSet = new Set(
+      this.input.config.tracker.activeStates.map((s) => s.toLowerCase().trim()),
+    );
 
     if (!refreshed) {
       this.input.logger.info(`[scheduler] retry: issue ${id} no longer visible; releasing claim`);
@@ -400,13 +431,17 @@ export class Scheduler {
     }
     const stateKey = refreshed.state.toLowerCase().trim();
     if (terminalSet.has(stateKey)) {
-      this.input.logger.info(`[scheduler] retry: issue ${refreshed.identifier} terminal; releasing claim`);
+      this.input.logger.info(
+        `[scheduler] retry: issue ${refreshed.identifier} terminal; releasing claim`,
+      );
       this.claimed.delete(id);
       this.wake();
       return;
     }
     if (!activeSet.has(stateKey)) {
-      this.input.logger.info(`[scheduler] retry: issue ${refreshed.identifier} non-active ${refreshed.state}; releasing claim`);
+      this.input.logger.info(
+        `[scheduler] retry: issue ${refreshed.identifier} non-active ${refreshed.state}; releasing claim`,
+      );
       this.claimed.delete(id);
       this.wake();
       return;

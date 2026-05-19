@@ -5,12 +5,7 @@ import type { Logger } from "../../orchestrator/orchestrator.js";
 import type { TrackerError } from "../../domain/tracker-errors.js";
 import type { GithubTrackerConfig } from "../../domain/tracker-config.js";
 import { Sensitive } from "../../util/sensitive.js";
-import {
-  type Issue,
-  IssueId,
-  IssueIdentifier,
-  IssueStateName,
-} from "../../domain/issue.js";
+import { type Issue, IssueId, IssueIdentifier, IssueStateName } from "../../domain/issue.js";
 import type { Tracker } from "../types.js";
 import {
   DEFAULT_GITHUB_ENDPOINT,
@@ -35,9 +30,7 @@ import {
 } from "./queries.js";
 import type { PollItemNode, IssueByIdNode } from "./queries.js";
 
-type AssigneeFilter =
-  | Readonly<{ kind: "none" }>
-  | Readonly<{ kind: "login"; login: string }>;
+type AssigneeFilter = Readonly<{ kind: "none" }> | Readonly<{ kind: "login"; login: string }>;
 
 const resolveAssigneeFilter = (
   assignee: string | undefined,
@@ -101,9 +94,8 @@ const toIssueFromPollItem = (
     priority: priorityFromFieldValues(item.fieldValues),
     createdAt: item.content.createdAt ? new Date(item.content.createdAt) : null,
     assigneeId: assigneeLogin,
-    assignedToWorker: assigneeFilter.kind === "none"
-      ? true
-      : assigneeLogin === assigneeFilter.login,
+    assignedToWorker:
+      assigneeFilter.kind === "none" ? true : assigneeLogin === assigneeFilter.login,
     blockedBy: [],
     extra: { kind: "github", projectId: meta.projectId, projectItemId: item.id },
   };
@@ -203,9 +195,8 @@ const toIssueFromIssueNode = (
     priority: priorityFromFieldValues(matching.fieldValues),
     createdAt: node.createdAt ? new Date(node.createdAt) : null,
     assigneeId: assigneeLogin,
-    assignedToWorker: assigneeFilter.kind === "none"
-      ? true
-      : assigneeLogin === assigneeFilter.login,
+    assignedToWorker:
+      assigneeFilter.kind === "none" ? true : assigneeLogin === assigneeFilter.login,
     blockedBy: [],
     extra: { kind: "github", projectId: meta.projectId, projectItemId: matching.id },
   };
@@ -282,7 +273,10 @@ const resolveStatusOption = (
   stateName: string,
 ): Result.Result<{ projectId: string; itemId: string; optionId: string }, TrackerError> => {
   if (issue.extra?.kind !== "github") {
-    return { type: "Failure", error: { kind: "github-no-project-item", issueIdentifier: issue.identifier } };
+    return {
+      type: "Failure",
+      error: { kind: "github-no-project-item", issueIdentifier: issue.identifier },
+    };
   }
   const optionId = meta.statusOptions.get(stateName);
   if (!optionId) {
@@ -360,18 +354,25 @@ export const createGithubTracker = async (
         const itemsR = await fetchAllProjectItems(clientDeps, meta.projectId);
         if (itemsR.type === "Failure") return itemsR;
         const allow = new Set<string>(config.activeStates);
-        return { type: "Success", value: filterAndNormalize(meta, itemsR.value, allow, assigneeFilter) };
+        return {
+          type: "Success",
+          value: filterAndNormalize(meta, itemsR.value, allow, assigneeFilter),
+        };
       },
       fetchIssuesByStates: async (states) => {
         if (states.length === 0) return { type: "Success", value: [] };
         const itemsR = await fetchAllProjectItems(clientDeps, meta.projectId);
         if (itemsR.type === "Failure") return itemsR;
         const allow = new Set<string>(states);
-        return { type: "Success", value: filterAndNormalize(meta, itemsR.value, allow, { kind: "none" }) };
+        return {
+          type: "Success",
+          value: filterAndNormalize(meta, itemsR.value, allow, { kind: "none" }),
+        };
       },
       fetchIssueStatesByIds: (ids) => fetchIssuesByIds(clientDeps, meta, ids, assigneeFilter),
       createComment: (issueId, body) => createCommentImpl(clientDeps, issueId, body),
-      updateIssueState: (issue, state) => updateStateWithRetry(clientDeps, meta, deps.logger, issue, state),
+      updateIssueState: (issue, state) =>
+        updateStateWithRetry(clientDeps, meta, deps.logger, issue, state),
     },
   };
 };
@@ -446,7 +447,10 @@ if (import.meta.vitest) {
     });
 
     it("createGithubTracker propagates warmup Failure", async () => {
-      const fetchFn = makeFetch([{ json: { data: { user: null } } }, { json: { data: { organization: null } } }]);
+      const fetchFn = makeFetch([
+        { json: { data: { user: null } } },
+        { json: { data: { organization: null } } },
+      ]);
       const r = await createGithubTracker(baseConfig, { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Failure") throw new Error("expected failure");
       expect(r.error.kind).toBe("github-project-not-found");
@@ -497,9 +501,7 @@ if (import.meta.vitest) {
 
     it("extractStatusRaw returns null when no SingleSelect Status value present", () => {
       const fieldValues = {
-        nodes: [
-          { __typename: "ProjectV2ItemFieldTextValue" },
-        ],
+        nodes: [{ __typename: "ProjectV2ItemFieldTextValue" }],
       } as any;
       expect(__internal__.extractStatusRaw(fieldValues)).toBeNull();
     });
@@ -596,10 +598,16 @@ if (import.meta.vitest) {
       expect(issueNone.assignedToWorker).toBe(true); // kind=none → always true
       expect(issueNone.blockedBy).toEqual([]);
 
-      const issueLogin = __internal__.toIssueFromPollItem(meta, item, "Todo", { kind: "login", login: "alice" });
+      const issueLogin = __internal__.toIssueFromPollItem(meta, item, "Todo", {
+        kind: "login",
+        login: "alice",
+      });
       expect(issueLogin.assignedToWorker).toBe(true); // assignee matches
 
-      const issueOther = __internal__.toIssueFromPollItem(meta, item, "Todo", { kind: "login", login: "bob" });
+      const issueOther = __internal__.toIssueFromPollItem(meta, item, "Todo", {
+        kind: "login",
+        login: "bob",
+      });
       expect(issueOther.assignedToWorker).toBe(false); // assignee does not match
     });
   });
@@ -620,7 +628,15 @@ if (import.meta.vitest) {
           items: {
             nodes: nodes.map((n) => ({
               id: n.id,
-              content: n.content === null ? null : { ...n.content, ...(n.assigneeLogin ? { assignees: { nodes: [{ login: n.assigneeLogin }] } } : {}) },
+              content:
+                n.content === null
+                  ? null
+                  : {
+                      ...n.content,
+                      ...(n.assigneeLogin
+                        ? { assignees: { nodes: [{ login: n.assigneeLogin }] } }
+                        : {}),
+                    },
               fieldValues: {
                 nodes:
                   n.state === undefined || n.state === null
@@ -653,8 +669,20 @@ if (import.meta.vitest) {
       const fetchFn = makeFetch([
         { json: { data: { user: { projectV2: projectV2OK } } } },
         { json: { data: { viewer: { login: "babie" } } } },
-        { json: pollPage([{ id: "PVTI_1", content: issueContent("I_1", 1), state: "Todo" }], true, "c1") },
-        { json: pollPage([{ id: "PVTI_2", content: issueContent("I_2", 2), state: "Todo" }], false, null) },
+        {
+          json: pollPage(
+            [{ id: "PVTI_1", content: issueContent("I_1", 1), state: "Todo" }],
+            true,
+            "c1",
+          ),
+        },
+        {
+          json: pollPage(
+            [{ id: "PVTI_2", content: issueContent("I_2", 2), state: "Todo" }],
+            false,
+            null,
+          ),
+        },
       ]);
       const r = await createGithubTracker(baseConfig, { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Success") throw new Error("expected success");
@@ -717,8 +745,18 @@ if (import.meta.vitest) {
         {
           json: pollPage(
             [
-              { id: "PVTI_1", content: issueContent("I_1", 1), state: "Todo", assigneeLogin: "babie" },
-              { id: "PVTI_2", content: issueContent("I_2", 2), state: "Todo", assigneeLogin: "alice" },
+              {
+                id: "PVTI_1",
+                content: issueContent("I_1", 1),
+                state: "Todo",
+                assigneeLogin: "babie",
+              },
+              {
+                id: "PVTI_2",
+                content: issueContent("I_2", 2),
+                state: "Todo",
+                assigneeLogin: "alice",
+              },
               { id: "PVTI_3", content: issueContent("I_3", 3), state: "Todo" /* no assignees */ },
             ],
             false,
@@ -726,7 +764,10 @@ if (import.meta.vitest) {
           ),
         },
       ]);
-      const r = await createGithubTracker({ ...baseConfig, assignee: "me" }, { logger: silentLogger, fetch: fetchFn });
+      const r = await createGithubTracker(
+        { ...baseConfig, assignee: "me" },
+        { logger: silentLogger, fetch: fetchFn },
+      );
       if (r.type !== "Success") throw new Error("expected success");
       const c = await r.value.fetchCandidateIssues();
       if (c.type !== "Success") throw new Error("expected success");
@@ -740,19 +781,30 @@ if (import.meta.vitest) {
         {
           json: pollPage(
             [
-              { id: "PVTI_1", content: issueContent("I_1", 1), state: "Done", assigneeLogin: "alice" },
-              { id: "PVTI_2", content: issueContent("I_2", 2), state: "Todo", assigneeLogin: "babie" },
+              {
+                id: "PVTI_1",
+                content: issueContent("I_1", 1),
+                state: "Done",
+                assigneeLogin: "alice",
+              },
+              {
+                id: "PVTI_2",
+                content: issueContent("I_2", 2),
+                state: "Todo",
+                assigneeLogin: "babie",
+              },
             ],
             false,
             null,
           ),
         },
       ]);
-      const r = await createGithubTracker({ ...baseConfig, assignee: "me" }, { logger: silentLogger, fetch: fetchFn });
+      const r = await createGithubTracker(
+        { ...baseConfig, assignee: "me" },
+        { logger: silentLogger, fetch: fetchFn },
+      );
       if (r.type !== "Success") throw new Error("expected success");
-      const c = await r.value.fetchIssuesByStates([
-        v.parse(IssueStateName.schema, "Done"),
-      ]);
+      const c = await r.value.fetchIssuesByStates([v.parse(IssueStateName.schema, "Done")]);
       if (c.type !== "Success") throw new Error("expected success");
       expect(c.value.map((i) => i.id)).toEqual(["I_1"]);
     });
@@ -935,7 +987,10 @@ if (import.meta.vitest) {
       ]);
       const r = await createGithubTracker(baseConfig, { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Success") throw new Error("expected success");
-      const u = await r.value.updateIssueState(issueWithExtra, v.parse(IssueStateName.schema, "Done"));
+      const u = await r.value.updateIssueState(
+        issueWithExtra,
+        v.parse(IssueStateName.schema, "Done"),
+      );
       if (u.type !== "Success") throw new Error("expected success");
       expect((fetchFn as any).mock.calls.length).toBe(3); // 2 warmup + 1 mutation
     });
@@ -954,7 +1009,10 @@ if (import.meta.vitest) {
       if (r.type !== "Success") throw new Error("expected success");
 
       vi.useFakeTimers();
-      const promise = r.value.updateIssueState(issueWithExtra, v.parse(IssueStateName.schema, "Done"));
+      const promise = r.value.updateIssueState(
+        issueWithExtra,
+        v.parse(IssueStateName.schema, "Done"),
+      );
       await vi.advanceTimersByTimeAsync(250);
       await vi.advanceTimersByTimeAsync(1000);
       vi.useRealTimers();
@@ -971,7 +1029,10 @@ if (import.meta.vitest) {
       ]);
       const r = await createGithubTracker(baseConfig, { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Success") throw new Error("expected success");
-      const u = await r.value.updateIssueState(issueNoExtra, v.parse(IssueStateName.schema, "Done"));
+      const u = await r.value.updateIssueState(
+        issueNoExtra,
+        v.parse(IssueStateName.schema, "Done"),
+      );
       if (u.type !== "Failure") throw new Error("expected failure");
       expect(u.error.kind).toBe("github-no-project-item");
       expect((fetchFn as any).mock.calls.length).toBe(2); // warmup only, no mutation attempted
@@ -984,7 +1045,10 @@ if (import.meta.vitest) {
       ]);
       const r = await createGithubTracker(baseConfig, { logger: silentLogger, fetch: fetchFn });
       if (r.type !== "Success") throw new Error("expected success");
-      const u = await r.value.updateIssueState(issueWithExtra, v.parse(IssueStateName.schema, "Wonky"));
+      const u = await r.value.updateIssueState(
+        issueWithExtra,
+        v.parse(IssueStateName.schema, "Wonky"),
+      );
       if (u.type !== "Failure") throw new Error("expected failure");
       expect(u.error.kind).toBe("github-status-option-not-found");
       expect((fetchFn as any).mock.calls.length).toBe(2);

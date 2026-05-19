@@ -45,9 +45,7 @@ if (import.meta.vitest) {
       const fetchSeq = vi.fn(async () => {
         callCount.n++;
         const body =
-          callCount.n === 1
-            ? { data: { user: null } }
-            : { data: { organization: null } };
+          callCount.n === 1 ? { data: { user: null } } : { data: { organization: null } };
         return new Response(JSON.stringify(body), { status: 200 });
       }) as unknown as typeof globalThis.fetch;
       const r = await createTracker(

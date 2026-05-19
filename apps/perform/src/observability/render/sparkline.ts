@@ -78,8 +78,7 @@ export const sparkline = (
 
   return bucketedTps
     .map((value) => {
-      const index =
-        maxTps <= 0 ? 0 : Math.round((value / maxTps) * (BLOCKS.length - 1));
+      const index = maxTps <= 0 ? 0 : Math.round((value / maxTps) * (BLOCKS.length - 1));
       return BLOCKS[Math.min(BLOCKS.length - 1, index)]!;
     })
     .join("");
@@ -201,7 +200,10 @@ if (import.meta.vitest) {
     });
 
     it("returns exactly 24 characters", () => {
-      const s: TokenSample[] = Array.from({ length: 12 }, (_, i) => [i * 50_000, i * 100] as TokenSample);
+      const s: TokenSample[] = Array.from(
+        { length: 12 },
+        (_, i) => [i * 50_000, i * 100] as TokenSample,
+      );
       const out = sparkline(s, 600_000, 1200, WINDOW);
       expect(out.length).toBe(24);
       expect([...out].every((c) => "▁▂▃▄▅▆▇█".includes(c))).toBe(true);

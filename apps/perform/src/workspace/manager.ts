@@ -31,7 +31,10 @@ export const ensureForIssue = async (
     }
   } catch (err: any) {
     if (err?.code !== "ENOENT") {
-      return { type: "Failure", error: { kind: "create-failed", path: target, cause: err?.message ?? String(err) } };
+      return {
+        type: "Failure",
+        error: { kind: "create-failed", path: target, cause: err?.message ?? String(err) },
+      };
     }
   }
 
@@ -39,7 +42,10 @@ export const ensureForIssue = async (
     try {
       await mkdir(target, { recursive: true });
     } catch (err: any) {
-      return { type: "Failure", error: { kind: "create-failed", path: target, cause: err?.message ?? String(err) } };
+      return {
+        type: "Failure",
+        error: { kind: "create-failed", path: target, cause: err?.message ?? String(err) },
+      };
     }
     if (hooks?.afterCreate) {
       const hookR = await runHook({
@@ -80,11 +86,7 @@ if (import.meta.vitest) {
   describe("workspace/manager", () => {
     it("creates a new dir and runs after_create hook", async () => {
       const root = await mkdtemp(join(tmpdir(), "perform-wsm-"));
-      const r = await ensureForIssue(
-        { root },
-        { afterCreate: 'echo "init" > marker.txt' },
-        issue,
-      );
+      const r = await ensureForIssue({ root }, { afterCreate: 'echo "init" > marker.txt' }, issue);
       if (r.type !== "Success") throw new Error("expected success");
       expect(r.value.created).toBe(true);
       const entries = await readdir(r.value.path);

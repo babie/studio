@@ -19,22 +19,32 @@ describe("orchestrator + ObservabilityState integration", () => {
       terminalStates: ["Done"],
       doingState: "In Progress",
       doneState: "Done",
-      issues: [{
-        id: v.parse(IssueId.schema, "M-1"),
-        identifier: v.parse(IssueIdentifier.schema, "M-1"),
-        title: "one", description: "",
-        state: v.parse(IssueStateName.schema, "Todo"),
-        priority: null,
-        createdAt: null,
-        assigneeId: null,
-        assignedToWorker: true,
-        blockedBy: [],
-      }],
+      issues: [
+        {
+          id: v.parse(IssueId.schema, "M-1"),
+          identifier: v.parse(IssueIdentifier.schema, "M-1"),
+          title: "one",
+          description: "",
+          state: v.parse(IssueStateName.schema, "Todo"),
+          priority: null,
+          createdAt: null,
+          assigneeId: null,
+          assignedToWorker: true,
+          blockedBy: [],
+        },
+      ],
     };
     const tracker = createMemoryTracker(trackerCfg);
     const state = new ObservabilityState();
     const config: WorkflowConfig = {
-      agent: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 1, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+      agent: {
+        backend: { type: "mock" },
+        maxConcurrentAgents: 1,
+        maxTurns: 1,
+        maxRetryBackoffMs: 300_000,
+        agentSessionStallTimeoutMs: 1_800_000,
+        maxConcurrentAgentsByState: {},
+      },
       tracker: trackerCfg,
       prompt: "{{ issue.identifier }}",
       workspace: { root },
@@ -45,7 +55,9 @@ describe("orchestrator + ObservabilityState integration", () => {
     const ctrl = new AbortController();
     setTimeout(() => ctrl.abort(), 2000);
     const res = await runOrchestrator({
-      tracker, backend: createMockBackend({ type: "mock" }), config,
+      tracker,
+      backend: createMockBackend({ type: "mock" }),
+      config,
       logger: { info: () => {}, warn: () => {}, error: () => {} },
       hooks: state,
       signal: ctrl.signal,

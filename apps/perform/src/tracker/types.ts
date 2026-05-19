@@ -10,10 +10,7 @@ export type Tracker = Readonly<{
   fetchIssueStatesByIds: (
     ids: ReadonlyArray<IssueId>,
   ) => Promise<Result.Result<ReadonlyArray<Issue>, TrackerError>>;
-  createComment: (
-    issueId: IssueId,
-    body: string,
-  ) => Promise<Result.Result<void, TrackerError>>;
+  createComment: (issueId: IssueId, body: string) => Promise<Result.Result<void, TrackerError>>;
   updateIssueState: (
     issue: Issue,
     state: IssueStateName,

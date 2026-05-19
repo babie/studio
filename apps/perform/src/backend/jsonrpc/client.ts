@@ -124,7 +124,13 @@ export class JsonRpcSubprocessClient {
     }
     const normalized = normalizeThreadStartResult(r.output);
     if (!normalized) {
-      return { type: "Failure", error: stdioProtocolError("schema", `could not extract threadId from: ${JSON.stringify(r.output)}`) };
+      return {
+        type: "Failure",
+        error: stdioProtocolError(
+          "schema",
+          `could not extract threadId from: ${JSON.stringify(r.output)}`,
+        ),
+      };
     }
     return { type: "Success", value: normalized };
   }
@@ -302,7 +308,9 @@ export class JsonRpcSubprocessClient {
     try {
       parsed = JSON.parse(line);
     } catch (err) {
-      this.logger.error(`[jsonrpc] json-parse: ${err instanceof Error ? err.message : String(err)}`);
+      this.logger.error(
+        `[jsonrpc] json-parse: ${err instanceof Error ? err.message : String(err)}`,
+      );
       return;
     }
 
@@ -443,10 +451,7 @@ if (import.meta.vitest) {
 
     it("request times out and emits request-timeout BackendError", async () => {
       const { client } = makeClient();
-      const p = client.initialize(
-        { clientInfo: { name: "c", version: "0" } },
-        { timeoutMs: 30 },
-      );
+      const p = client.initialize({ clientInfo: { name: "c", version: "0" } }, { timeoutMs: 30 });
       const r = await p;
       if (r.type !== "Failure") throw new Error("expected failure");
       expect(r.error.kind).toBe("request-timeout");
@@ -457,7 +462,13 @@ if (import.meta.vitest) {
       // Walk through initialize + thread/start
       const init = client.initialize({ clientInfo: { name: "c", version: "0" } });
       await Promise.resolve();
-      control.feedLine(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { serverInfo: { name: "x", version: "0" } } }));
+      control.feedLine(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          result: { serverInfo: { name: "x", version: "0" } },
+        }),
+      );
       await init;
       const start = client.startThread({ cwd: "/tmp/x" });
       await Promise.resolve();
@@ -475,11 +486,15 @@ if (import.meta.vitest) {
       });
       await Promise.resolve();
       // turn/started notification (forwarded to handler)
-      control.feedLine(JSON.stringify({ jsonrpc: "2.0", method: "turn/started", params: { threadId: "thr_1" } }));
+      control.feedLine(
+        JSON.stringify({ jsonrpc: "2.0", method: "turn/started", params: { threadId: "thr_1" } }),
+      );
       // turn/start response (ignored for completion — wait for notification)
       control.feedLine(JSON.stringify({ jsonrpc: "2.0", id: 3, result: { threadId: "thr_1" } }));
       // turn/completed notification (this triggers resolve)
-      control.feedLine(JSON.stringify({ jsonrpc: "2.0", method: "turn/completed", params: { threadId: "thr_1" } }));
+      control.feedLine(
+        JSON.stringify({ jsonrpc: "2.0", method: "turn/completed", params: { threadId: "thr_1" } }),
+      );
       const r = await p;
       if (r.type !== "Success") throw new Error("expected success");
       expect(r.value.threadId).toBe("thr_1");
@@ -490,7 +505,13 @@ if (import.meta.vitest) {
       const { client, control } = makeClient();
       const init = client.initialize({ clientInfo: { name: "c", version: "0" } });
       await Promise.resolve();
-      control.feedLine(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { serverInfo: { name: "x", version: "0" } } }));
+      control.feedLine(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          result: { serverInfo: { name: "x", version: "0" } },
+        }),
+      );
       await init;
       const start = client.startThread({ cwd: "/tmp/x" });
       await Promise.resolve();
@@ -531,7 +552,13 @@ if (import.meta.vitest) {
       const { client, control } = makeClient();
       const init = client.initialize({ clientInfo: { name: "c", version: "0" } });
       await Promise.resolve();
-      control.feedLine(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { serverInfo: { name: "x", version: "0" } } }));
+      control.feedLine(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          result: { serverInfo: { name: "x", version: "0" } },
+        }),
+      );
       await init;
       // Unknown notification arrives
       control.feedLine(JSON.stringify({ jsonrpc: "2.0", method: "some/unknown", params: {} }));
@@ -543,9 +570,17 @@ if (import.meta.vitest) {
       const { client, control } = makeClient();
       const p = client.initialize({ clientInfo: { name: "c", version: "0" } });
       await Promise.resolve();
-      control.feedLine(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { serverInfo: { name: "x", version: "0" } } }));
+      control.feedLine(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          result: { serverInfo: { name: "x", version: "0" } },
+        }),
+      );
       await p;
-      await expect(client.initialize({ clientInfo: { name: "c", version: "0" } })).rejects.toThrow(/lifecycle=ready/);
+      await expect(client.initialize({ clientInfo: { name: "c", version: "0" } })).rejects.toThrow(
+        /lifecycle=ready/,
+      );
     });
 
     it("runTurn returns session-exited-mid-turn when transport closes before turn/completed", async () => {
@@ -553,7 +588,13 @@ if (import.meta.vitest) {
       // Walk through initialize + thread/start
       const init = client.initialize({ clientInfo: { name: "c", version: "0" } });
       await Promise.resolve();
-      control.feedLine(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { serverInfo: { name: "x", version: "0" } } }));
+      control.feedLine(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          result: { serverInfo: { name: "x", version: "0" } },
+        }),
+      );
       await init;
       const start = client.startThread({ cwd: "/tmp/x" });
       await Promise.resolve();

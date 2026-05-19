@@ -10,7 +10,11 @@ import type { WorkspaceConfig } from "../domain/workspace-config.js";
 import type { HooksConfig } from "../domain/hooks-config.js";
 import type { AgentConfig } from "../domain/agent-config.js";
 import type { Logger } from "./orchestrator.js";
-import { type ObservabilityHooks, type TurnEvent, NULL_HOOKS } from "../observability/instrumentation.js";
+import {
+  type ObservabilityHooks,
+  type TurnEvent,
+  NULL_HOOKS,
+} from "../observability/instrumentation.js";
 import { ensureForIssue } from "../workspace/manager.js";
 import { runHook, buildHookEnv, DEFAULT_HOOK_TIMEOUT_MS } from "../workspace/hooks.js";
 import { buildPrompt } from "../prompt/builder.js";
@@ -116,8 +120,7 @@ export const runAgent = async (
         case "thread/started": {
           const p = n.params as Record<string, unknown> | undefined;
           const id =
-            ((p?.thread as { id?: string } | undefined)?.id) ??
-            (p?.threadId as string | undefined);
+            (p?.thread as { id?: string } | undefined)?.id ?? (p?.threadId as string | undefined);
           if (id) hooks.onTurnEvent(issueIdStr, { kind: "thread-started", sessionId: id });
           break;
         }
@@ -126,16 +129,21 @@ export const runAgent = async (
           break;
         case "turn/completed": {
           const usage = extractCodexUsage(n.params);
-          hooks.onTurnEvent(issueIdStr, usage ? { kind: "turn-completed", usage } : { kind: "turn-completed" });
+          hooks.onTurnEvent(
+            issueIdStr,
+            usage ? { kind: "turn-completed", usage } : { kind: "turn-completed" },
+          );
           break;
         }
         default: {
           if (n.method.startsWith("item/")) {
-            const p = ((n as { params?: unknown }).params as Record<string, unknown> | undefined) ?? {};
+            const p =
+              ((n as { params?: unknown }).params as Record<string, unknown> | undefined) ?? {};
             if (n.method === "item/agentMessage/delta") {
               const text = String(
-                ((p.delta as { text?: string } | undefined)?.text) ??
-                (p.text as string | undefined) ?? "",
+                (p.delta as { text?: string } | undefined)?.text ??
+                  (p.text as string | undefined) ??
+                  "",
               );
               hooks.onTurnEvent(issueIdStr, { kind: "agent-message", text });
             } else if (n.method === "item/commandExecution/outputDelta") {
@@ -190,14 +198,16 @@ export const runAgent = async (
           signal,
           onNotification: onNotif,
         }),
-        session.exitPromise.then((info): Result.Result<TurnResult, BackendError> => ({
-          type: "Failure",
-          error: {
-            kind: "session-exited-mid-turn",
-            exitCode: info.code,
-            signal: info.signal as string | null,
-          },
-        })),
+        session.exitPromise.then(
+          (info): Result.Result<TurnResult, BackendError> => ({
+            type: "Failure",
+            error: {
+              kind: "session-exited-mid-turn",
+              exitCode: info.code,
+              signal: info.signal as string | null,
+            },
+          }),
+        ),
       ]);
       turnsExecuted = turn;
       if (tr.type === "Failure") {
@@ -228,7 +238,9 @@ export const runAgent = async (
         break;
       }
       if (turn === agentConfig.maxTurns) {
-        logger.info(`[orchestrator] ${currentIssue.identifier} reached max_turns=${agentConfig.maxTurns} without terminal state`);
+        logger.info(
+          `[orchestrator] ${currentIssue.identifier} reached max_turns=${agentConfig.maxTurns} without terminal state`,
+        );
       }
     }
   } finally {
@@ -289,19 +301,24 @@ if (import.meta.vitest) {
 
   const silent: Logger = { info: () => {}, warn: () => {}, error: () => {} };
 
-  const makeBackend = (turnResults: Array<{ type: "Success"; value: { completed: true } } | { type: "Failure"; error: any }>) => {
+  const makeBackend = (
+    turnResults: Array<
+      { type: "Success"; value: { completed: true } } | { type: "Failure"; error: any }
+    >,
+  ) => {
     let i = 0;
     return {
       type: "mock" as const,
-      startSession: async () => ok({
-        runTurn: vi.fn(async () => {
-          const r = turnResults[i++] ?? ok({ completed: true });
-          return r;
+      startSession: async () =>
+        ok({
+          runTurn: vi.fn(async () => {
+            const r = turnResults[i++] ?? ok({ completed: true });
+            return r;
+          }),
+          shutdown: async () => {},
+          interrupt: async () => {},
+          exitPromise: Promise.resolve({ code: 0, signal: null }),
         }),
-        shutdown: async () => {},
-        interrupt: async () => {},
-        exitPromise: Promise.resolve({ code: 0, signal: null }),
-      }),
     };
   };
 
@@ -323,7 +340,14 @@ if (import.meta.vitest) {
         issue,
         backend,
         tracker,
-        agentConfig: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 3, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+        agentConfig: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 1,
+          maxTurns: 3,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
         workspaceConfig: { root },
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
         activeStates: [v.parse(IssueStateName.schema, "Todo")],
@@ -343,7 +367,10 @@ if (import.meta.vitest) {
       const root = await mkdtemp(join(tmpdir(), "perform-runner-"));
       // Issue starts Todo; doing_state mutation moves it to "In Progress" (not in activeStates,
       // not in terminalStates). After turn 1, the third condition should fire and break.
-      const inProgressIssue: Issue = { ...issue, state: v.parse(IssueStateName.schema, "In Progress") };
+      const inProgressIssue: Issue = {
+        ...issue,
+        state: v.parse(IssueStateName.schema, "In Progress"),
+      };
       const tracker = {
         fetchCandidateIssues: async () => ok([]),
         fetchIssuesByStates: async () => ok([]),
@@ -351,13 +378,24 @@ if (import.meta.vitest) {
         createComment: async () => ok(undefined),
         updateIssueState: vi.fn(async () => ok(undefined)),
       } as Tracker;
-      const backend = makeBackend([ok({ completed: true }), ok({ completed: true }), ok({ completed: true })]);
+      const backend = makeBackend([
+        ok({ completed: true }),
+        ok({ completed: true }),
+        ok({ completed: true }),
+      ]);
 
       const res = await runAgent({
         issue,
         backend,
         tracker,
-        agentConfig: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 3, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+        agentConfig: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 1,
+          maxTurns: 3,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
         workspaceConfig: { root },
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
         activeStates: [v.parse(IssueStateName.schema, "Todo")],
@@ -380,7 +418,10 @@ if (import.meta.vitest) {
 
     it("ADR-0014 third condition does NOT fire without doingState", async () => {
       const root = await mkdtemp(join(tmpdir(), "perform-runner-"));
-      const inProgressIssue: Issue = { ...issue, state: v.parse(IssueStateName.schema, "In Progress") };
+      const inProgressIssue: Issue = {
+        ...issue,
+        state: v.parse(IssueStateName.schema, "In Progress"),
+      };
       const tracker = {
         fetchCandidateIssues: async () => ok([]),
         fetchIssuesByStates: async () => ok([]),
@@ -388,13 +429,24 @@ if (import.meta.vitest) {
         createComment: async () => ok(undefined),
         updateIssueState: vi.fn(async () => ok(undefined)),
       } as Tracker;
-      const backend = makeBackend([ok({ completed: true }), ok({ completed: true }), ok({ completed: true })]);
+      const backend = makeBackend([
+        ok({ completed: true }),
+        ok({ completed: true }),
+        ok({ completed: true }),
+      ]);
 
       const res = await runAgent({
         issue,
         backend,
         tracker,
-        agentConfig: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 3, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+        agentConfig: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 1,
+          maxTurns: 3,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
         workspaceConfig: { root },
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
         activeStates: [v.parse(IssueStateName.schema, "Todo")],
@@ -428,7 +480,14 @@ if (import.meta.vitest) {
         issue,
         backend,
         tracker,
-        agentConfig: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 3, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+        agentConfig: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 1,
+          maxTurns: 3,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
         workspaceConfig: { root },
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
         activeStates: [v.parse(IssueStateName.schema, "Todo")],
@@ -458,7 +517,14 @@ if (import.meta.vitest) {
         issue,
         backend,
         tracker,
-        agentConfig: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 3, maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+        agentConfig: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 1,
+          maxTurns: 3,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
         workspaceConfig: { root },
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
         activeStates: [v.parse(IssueStateName.schema, "Todo")],

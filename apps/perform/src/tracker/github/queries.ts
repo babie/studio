@@ -274,17 +274,14 @@ const OtherContentSchema = v.object({
   __typename: v.string(),
 });
 
-const ContentSchema = v.nullable(
-  v.variant("__typename", [IssueContentSchema, OtherContentSchema]),
-);
+const ContentSchema = v.nullable(v.variant("__typename", [IssueContentSchema, OtherContentSchema]));
 
 /** Type predicate: narrows a parsed PollItem content value to the Issue arm.
  *  See [[feedback-valibot-variant-narrowing-limit]] for why an explicit
  *  predicate is required (the catch-all arm widens `__typename` to `string`). */
 export const isIssueContent = (
   content: v.InferOutput<typeof IssueContentSchema> | v.InferOutput<typeof OtherContentSchema>,
-): content is v.InferOutput<typeof IssueContentSchema> =>
-  content.__typename === "Issue";
+): content is v.InferOutput<typeof IssueContentSchema> => content.__typename === "Issue";
 
 export const PollItemNodeSchema = v.object({
   id: v.string(),
@@ -337,9 +334,7 @@ const OtherNodeSchema = v.object({
 
 export const IssuesByIdsResponseSchema = v.object({
   data: v.object({
-    nodes: v.array(
-      v.nullable(v.variant("__typename", [IssueByIdNodeSchema, OtherNodeSchema])),
-    ),
+    nodes: v.array(v.nullable(v.variant("__typename", [IssueByIdNodeSchema, OtherNodeSchema]))),
   }),
 });
 
@@ -348,8 +343,7 @@ export type IssueByIdNode = v.InferOutput<typeof IssueByIdNodeSchema>;
 /** Type predicate: narrows an `IssuesByIdsResponseSchema` node to the Issue arm. */
 export const isIssueByIdNode = (
   node: v.InferOutput<typeof IssueByIdNodeSchema> | v.InferOutput<typeof OtherNodeSchema>,
-): node is IssueByIdNode =>
-  node.__typename === "Issue";
+): node is IssueByIdNode => node.__typename === "Issue";
 
 export const AddCommentResponseSchema = v.object({
   data: v.object({
@@ -590,7 +584,11 @@ if (import.meta.vitest) {
     });
 
     it("isSingleSelectFieldValue narrows the SingleSelect arm", () => {
-      const ss = { __typename: "ProjectV2ItemFieldSingleSelectValue", field: { name: "Status" }, name: "Todo" };
+      const ss = {
+        __typename: "ProjectV2ItemFieldSingleSelectValue",
+        field: { name: "Status" },
+        name: "Todo",
+      };
       const text = { __typename: "ProjectV2ItemFieldTextValue" };
       const parsedSs = v.safeParse(FieldValueSchema, ss);
       const parsedTx = v.safeParse(FieldValueSchema, text);
@@ -600,7 +598,12 @@ if (import.meta.vitest) {
     });
 
     it("isSingleSelectField narrows ProjectField via __typename", () => {
-      const ss = { __typename: "ProjectV2SingleSelectField", id: "FLD_1", name: "Status", options: [] };
+      const ss = {
+        __typename: "ProjectV2SingleSelectField",
+        id: "FLD_1",
+        name: "Status",
+        options: [],
+      };
       const other = { __typename: "ProjectV2Field" };
       const parsedSs = v.safeParse(ProjectFieldSchema, ss);
       const parsedOther = v.safeParse(ProjectFieldSchema, other);
@@ -610,10 +613,20 @@ if (import.meta.vitest) {
     });
 
     it("isIssueContent narrows PollItem content via __typename", () => {
-      const issue = { __typename: "Issue", id: "I_1", number: 1, title: "t", body: null, repository: { nameWithOwner: "o/r" } };
+      const issue = {
+        __typename: "Issue",
+        id: "I_1",
+        number: 1,
+        title: "t",
+        body: null,
+        repository: { nameWithOwner: "o/r" },
+      };
       const pr = { __typename: "PullRequest" };
       const parsedIssue = v.safeParse(IssueContentSchema, issue);
-      const parsedPr = v.safeParse(v.variant("__typename", [IssueContentSchema, v.object({ __typename: v.string() })]), pr);
+      const parsedPr = v.safeParse(
+        v.variant("__typename", [IssueContentSchema, v.object({ __typename: v.string() })]),
+        pr,
+      );
       if (!parsedIssue.success || !parsedPr.success) throw new Error("expected success");
       expect(isIssueContent(parsedIssue.output)).toBe(true);
       expect(isIssueContent(parsedPr.output)).toBe(false);
@@ -621,7 +634,11 @@ if (import.meta.vitest) {
 
     it("isIssueByIdNode narrows IssuesByIds node via __typename", () => {
       const issue = {
-        __typename: "Issue", id: "I_1", number: 1, title: "t", body: null,
+        __typename: "Issue",
+        id: "I_1",
+        number: 1,
+        title: "t",
+        body: null,
         repository: { nameWithOwner: "o/r" },
         projectItems: { nodes: [] },
       };

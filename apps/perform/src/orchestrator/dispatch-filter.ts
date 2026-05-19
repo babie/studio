@@ -6,7 +6,8 @@ import type { Issue, IssueStateName } from "../domain/issue.js";
  * - createdAt null → +Infinity (sort to end)
  * - identifier as last tiebreaker
  */
-const priorityRank = (p: number | null): number => (p === 1 || p === 2 || p === 3 || p === 4 ? p : 5);
+const priorityRank = (p: number | null): number =>
+  p === 1 || p === 2 || p === 3 || p === 4 ? p : 5;
 
 const createdAtKey = (d: Date | null): number => (d ? d.getTime() : Number.POSITIVE_INFINITY);
 
@@ -47,8 +48,14 @@ export type DispatchableInput<T extends Issue> = Readonly<{
 
 export const selectDispatchable = <T extends Issue>(input: DispatchableInput<T>): T[] => {
   const {
-    candidates, activeStates, terminalStates, running, claimed,
-    maxConcurrentAgents, maxConcurrentAgentsByState, runningCountByState,
+    candidates,
+    activeStates,
+    terminalStates,
+    running,
+    claimed,
+    maxConcurrentAgents,
+    maxConcurrentAgentsByState,
+    runningCountByState,
   } = input;
   const activeSet = new Set(activeStates.map((s) => s.toLowerCase().trim()));
   const terminalSet = new Set(terminalStates.map((s) => s.toLowerCase().trim()));
@@ -78,27 +85,40 @@ export const selectDispatchable = <T extends Issue>(input: DispatchableInput<T>)
 if (import.meta.vitest) {
   const { describe, it, expect } = await import("vitest");
   const v = await import("valibot");
-  const { IssueId, IssueIdentifier, IssueStateName, PriorityValue } = await import("../domain/issue.js");
+  const { IssueId, IssueIdentifier, IssueStateName, PriorityValue } =
+    await import("../domain/issue.js");
 
-  const mk = (overrides: Partial<Issue> & Pick<Issue, "id" | "identifier" | "state">): Issue => ({
-    title: "t", description: "",
-    priority: null, createdAt: null, assigneeId: null, assignedToWorker: true, blockedBy: [],
-    ...overrides,
-  }) as Issue;
+  const mk = (overrides: Partial<Issue> & Pick<Issue, "id" | "identifier" | "state">): Issue =>
+    ({
+      title: "t",
+      description: "",
+      priority: null,
+      createdAt: null,
+      assigneeId: null,
+      assignedToWorker: true,
+      blockedBy: [],
+      ...overrides,
+    }) as Issue;
 
   describe("orchestrator/dispatch-filter", () => {
     it("sorts by priority asc, null treated as 5", () => {
       const a = mk({
-        id: v.parse(IssueId.schema, "A"), identifier: v.parse(IssueIdentifier.schema, "A"),
-        state: v.parse(IssueStateName.schema, "Todo"), priority: v.parse(PriorityValue.schema, 3),
+        id: v.parse(IssueId.schema, "A"),
+        identifier: v.parse(IssueIdentifier.schema, "A"),
+        state: v.parse(IssueStateName.schema, "Todo"),
+        priority: v.parse(PriorityValue.schema, 3),
       });
       const b = mk({
-        id: v.parse(IssueId.schema, "B"), identifier: v.parse(IssueIdentifier.schema, "B"),
-        state: v.parse(IssueStateName.schema, "Todo"), priority: v.parse(PriorityValue.schema, 1),
+        id: v.parse(IssueId.schema, "B"),
+        identifier: v.parse(IssueIdentifier.schema, "B"),
+        state: v.parse(IssueStateName.schema, "Todo"),
+        priority: v.parse(PriorityValue.schema, 1),
       });
       const c = mk({
-        id: v.parse(IssueId.schema, "C"), identifier: v.parse(IssueIdentifier.schema, "C"),
-        state: v.parse(IssueStateName.schema, "Todo"), priority: null,
+        id: v.parse(IssueId.schema, "C"),
+        identifier: v.parse(IssueIdentifier.schema, "C"),
+        state: v.parse(IssueStateName.schema, "Todo"),
+        priority: null,
       });
       const sorted = sortByPriorityThenCreatedAt([a, b, c]);
       expect(sorted.map((i) => i.identifier)).toEqual(["B", "A", "C"]);
@@ -106,14 +126,18 @@ if (import.meta.vitest) {
 
     it("createdAt tiebreaker after priority", () => {
       const older = mk({
-        id: v.parse(IssueId.schema, "OLD"), identifier: v.parse(IssueIdentifier.schema, "OLD"),
+        id: v.parse(IssueId.schema, "OLD"),
+        identifier: v.parse(IssueIdentifier.schema, "OLD"),
         state: v.parse(IssueStateName.schema, "Todo"),
-        priority: v.parse(PriorityValue.schema, 2), createdAt: new Date("2026-01-01"),
+        priority: v.parse(PriorityValue.schema, 2),
+        createdAt: new Date("2026-01-01"),
       });
       const newer = mk({
-        id: v.parse(IssueId.schema, "NEW"), identifier: v.parse(IssueIdentifier.schema, "NEW"),
+        id: v.parse(IssueId.schema, "NEW"),
+        identifier: v.parse(IssueIdentifier.schema, "NEW"),
         state: v.parse(IssueStateName.schema, "Todo"),
-        priority: v.parse(PriorityValue.schema, 2), createdAt: new Date("2026-02-01"),
+        priority: v.parse(PriorityValue.schema, 2),
+        createdAt: new Date("2026-02-01"),
       });
       const sorted = sortByPriorityThenCreatedAt([newer, older]);
       expect(sorted.map((i) => i.identifier)).toEqual(["OLD", "NEW"]);
@@ -121,50 +145,63 @@ if (import.meta.vitest) {
 
     it("isBlockerSkippable: Todo + non-terminal blocker is true", () => {
       const issue = mk({
-        id: v.parse(IssueId.schema, "X"), identifier: v.parse(IssueIdentifier.schema, "X"),
+        id: v.parse(IssueId.schema, "X"),
+        identifier: v.parse(IssueIdentifier.schema, "X"),
         state: v.parse(IssueStateName.schema, "Todo"),
-        blockedBy: [{
-          id: v.parse(IssueId.schema, "Y"),
-          state: v.parse(IssueStateName.schema, "In Progress"),
-        }],
+        blockedBy: [
+          {
+            id: v.parse(IssueId.schema, "Y"),
+            state: v.parse(IssueStateName.schema, "In Progress"),
+          },
+        ],
       });
       expect(isBlockerSkippable(issue, [v.parse(IssueStateName.schema, "Done")])).toBe(true);
     });
 
     it("isBlockerSkippable: Todo + only terminal blocker is false", () => {
       const issue = mk({
-        id: v.parse(IssueId.schema, "X"), identifier: v.parse(IssueIdentifier.schema, "X"),
+        id: v.parse(IssueId.schema, "X"),
+        identifier: v.parse(IssueIdentifier.schema, "X"),
         state: v.parse(IssueStateName.schema, "Todo"),
-        blockedBy: [{
-          id: v.parse(IssueId.schema, "Y"),
-          state: v.parse(IssueStateName.schema, "Done"),
-        }],
+        blockedBy: [
+          {
+            id: v.parse(IssueId.schema, "Y"),
+            state: v.parse(IssueStateName.schema, "Done"),
+          },
+        ],
       });
       expect(isBlockerSkippable(issue, [v.parse(IssueStateName.schema, "Done")])).toBe(false);
     });
 
     it("isBlockerSkippable: non-Todo state never skipped", () => {
       const issue = mk({
-        id: v.parse(IssueId.schema, "X"), identifier: v.parse(IssueIdentifier.schema, "X"),
+        id: v.parse(IssueId.schema, "X"),
+        identifier: v.parse(IssueIdentifier.schema, "X"),
         state: v.parse(IssueStateName.schema, "In Progress"),
-        blockedBy: [{
-          id: v.parse(IssueId.schema, "Y"),
-          state: v.parse(IssueStateName.schema, "Todo"),
-        }],
+        blockedBy: [
+          {
+            id: v.parse(IssueId.schema, "Y"),
+            state: v.parse(IssueStateName.schema, "Todo"),
+          },
+        ],
       });
       expect(isBlockerSkippable(issue, [v.parse(IssueStateName.schema, "Done")])).toBe(false);
     });
 
     it("selectDispatchable: respects maxConcurrentAgents", () => {
-      const issues = ["A", "B", "C"].map((id) => mk({
-        id: v.parse(IssueId.schema, id), identifier: v.parse(IssueIdentifier.schema, id),
-        state: v.parse(IssueStateName.schema, "Todo"),
-      }));
+      const issues = ["A", "B", "C"].map((id) =>
+        mk({
+          id: v.parse(IssueId.schema, id),
+          identifier: v.parse(IssueIdentifier.schema, id),
+          state: v.parse(IssueStateName.schema, "Todo"),
+        }),
+      );
       const out = selectDispatchable({
         candidates: issues,
         activeStates: [v.parse(IssueStateName.schema, "Todo")],
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
-        running: new Set(), claimed: new Set(),
+        running: new Set(),
+        claimed: new Set(),
         maxConcurrentAgents: 2,
         maxConcurrentAgentsByState: {},
         runningCountByState: {},
@@ -174,30 +211,38 @@ if (import.meta.vitest) {
 
     it("selectDispatchable: skips assignedToWorker=false", () => {
       const issue = mk({
-        id: v.parse(IssueId.schema, "A"), identifier: v.parse(IssueIdentifier.schema, "A"),
-        state: v.parse(IssueStateName.schema, "Todo"), assignedToWorker: false,
+        id: v.parse(IssueId.schema, "A"),
+        identifier: v.parse(IssueIdentifier.schema, "A"),
+        state: v.parse(IssueStateName.schema, "Todo"),
+        assignedToWorker: false,
       });
       const out = selectDispatchable({
         candidates: [issue],
         activeStates: [v.parse(IssueStateName.schema, "Todo")],
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
-        running: new Set(), claimed: new Set(),
+        running: new Set(),
+        claimed: new Set(),
         maxConcurrentAgents: 2,
-        maxConcurrentAgentsByState: {}, runningCountByState: {},
+        maxConcurrentAgentsByState: {},
+        runningCountByState: {},
       });
       expect(out.length).toBe(0);
     });
 
     it("selectDispatchable: respects per-state limit", () => {
-      const issues = ["A", "B"].map((id) => mk({
-        id: v.parse(IssueId.schema, id), identifier: v.parse(IssueIdentifier.schema, id),
-        state: v.parse(IssueStateName.schema, "In Progress"),
-      }));
+      const issues = ["A", "B"].map((id) =>
+        mk({
+          id: v.parse(IssueId.schema, id),
+          identifier: v.parse(IssueIdentifier.schema, id),
+          state: v.parse(IssueStateName.schema, "In Progress"),
+        }),
+      );
       const out = selectDispatchable({
         candidates: issues,
         activeStates: [v.parse(IssueStateName.schema, "In Progress")],
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
-        running: new Set(), claimed: new Set(),
+        running: new Set(),
+        claimed: new Set(),
         maxConcurrentAgents: 10,
         maxConcurrentAgentsByState: { "In Progress": 1 },
         runningCountByState: {},
@@ -207,7 +252,8 @@ if (import.meta.vitest) {
 
     it("selectDispatchable: skips already running or claimed", () => {
       const issue = mk({
-        id: v.parse(IssueId.schema, "A"), identifier: v.parse(IssueIdentifier.schema, "A"),
+        id: v.parse(IssueId.schema, "A"),
+        identifier: v.parse(IssueIdentifier.schema, "A"),
         state: v.parse(IssueStateName.schema, "Todo"),
       });
       const out = selectDispatchable({
@@ -217,24 +263,29 @@ if (import.meta.vitest) {
         running: new Set(["A"]),
         claimed: new Set(),
         maxConcurrentAgents: 10,
-        maxConcurrentAgentsByState: {}, runningCountByState: {},
+        maxConcurrentAgentsByState: {},
+        runningCountByState: {},
       });
       expect(out.length).toBe(0);
     });
 
     it("selectDispatchable: respects max=3 with 2 running and 0 extra claimed → 1 more dispatchable", () => {
-      const candidates = ["X", "Y", "Z"].map((id) => mk({
-        id: v.parse(IssueId.schema, id), identifier: v.parse(IssueIdentifier.schema, id),
-        state: v.parse(IssueStateName.schema, "Todo"),
-      }));
+      const candidates = ["X", "Y", "Z"].map((id) =>
+        mk({
+          id: v.parse(IssueId.schema, id),
+          identifier: v.parse(IssueIdentifier.schema, id),
+          state: v.parse(IssueStateName.schema, "Todo"),
+        }),
+      );
       const out = selectDispatchable({
         candidates,
         activeStates: [v.parse(IssueStateName.schema, "Todo")],
         terminalStates: [v.parse(IssueStateName.schema, "Done")],
-        running: new Set(["A", "B"]),  // 2 already running
-        claimed: new Set(["A", "B"]),  // running ⊆ claimed, so claimed.size = 2
+        running: new Set(["A", "B"]), // 2 already running
+        claimed: new Set(["A", "B"]), // running ⊆ claimed, so claimed.size = 2
         maxConcurrentAgents: 3,
-        maxConcurrentAgentsByState: {}, runningCountByState: {},
+        maxConcurrentAgentsByState: {},
+        runningCountByState: {},
       });
       // Before fix: totalUsed = 2+2 = 4 ≥ 3 → out.length = 0 (BUG)
       // After fix:  totalUsed = 2 → 1 slot free → out.length = 1

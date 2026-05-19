@@ -46,16 +46,10 @@ const truncatePlain = (s: string, width: number): string => {
  * then pad to `width`.  align: "left" (default) or "right".
  * Mirrors symphony's `format_cell/3`.
  */
-const formatCell = (
-  value: string,
-  width: number,
-  align: "left" | "right" = "left",
-): string => {
+const formatCell = (value: string, width: number, align: "left" | "right" = "left"): string => {
   const cleaned = value.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
   const truncated = truncatePlain(cleaned, width);
-  return align === "right"
-    ? truncated.padStart(width)
-    : truncated.padEnd(width);
+  return align === "right" ? truncated.padStart(width) : truncated.padEnd(width);
 };
 
 /**
@@ -75,10 +69,7 @@ const compactSessionId = (sessionId: string | null): string => {
  * Format runtime seconds + turn count in symphony's "Xm Ys / N" format.
  * When turn_count is 0 (or falsy), just "Xm Ys".
  */
-const formatRuntimeAndTurns = (
-  runtimeSeconds: number,
-  turnCount: number,
-): string => {
+const formatRuntimeAndTurns = (runtimeSeconds: number, turnCount: number): string => {
   const base = formatRuntimeSeconds(runtimeSeconds);
   if (turnCount > 0) return `${base} / ${turnCount}`;
   return base;
@@ -116,10 +107,7 @@ const statusColor = (lastCodexEvent: string | null): string => {
  * default (which yields EVENT_DEFAULT_WIDTH = 44).
  */
 export const runningEventWidth = (terminalColumns: number): number =>
-  Math.max(
-    EVENT_MIN_WIDTH,
-    terminalColumns - FIXED_RUNNING_WIDTH - ROW_CHROME_WIDTH,
-  );
+  Math.max(EVENT_MIN_WIDTH, terminalColumns - FIXED_RUNNING_WIDTH - ROW_CHROME_WIDTH);
 
 /**
  * Render the header row for the running table.
@@ -152,10 +140,7 @@ const renderRunningTableSeparator = (eventWidth: number): string => {
  * Render a single running-agent row.
  * Output: "│ ●(color) id(cyan) stage(color) pid(yellow) age(magenta) tokens(yellow) session(cyan) event(color)"
  */
-const renderRunningRow = (
-  row: RunningEntry,
-  eventWidth: number,
-): string => {
+const renderRunningRow = (row: RunningEntry, eventWidth: number): string => {
   const color = statusColor(row.lastCodexEvent);
 
   const id = formatCell(row.identifier ?? "unknown", ID_WIDTH);
@@ -168,15 +153,8 @@ const renderRunningRow = (
     formatRuntimeAndTurns(row.runtimeSeconds ?? 0, row.turnCount ?? 0),
     AGE_WIDTH,
   );
-  const tokens = formatCell(
-    formatCount(row.codexTotalTokens ?? 0),
-    TOKENS_WIDTH,
-    "right",
-  );
-  const session = formatCell(
-    compactSessionId(row.sessionId),
-    SESSION_WIDTH,
-  );
+  const tokens = formatCell(formatCount(row.codexTotalTokens ?? 0), TOKENS_WIDTH, "right");
+  const session = formatCell(compactSessionId(row.sessionId), SESSION_WIDTH);
   const event = formatCell(row.lastCodexMessage ?? "none", eventWidth);
 
   return (
@@ -219,26 +197,14 @@ export const renderRunningLines = (
   const separator = renderRunningTableSeparator(eventWidth);
 
   if (running.length === 0) {
-    return [
-      "│",
-      header,
-      separator,
-      "│  " + colorize("No active agents", ANSI.gray),
-      "│",
-    ];
+    return ["│", header, separator, "│  " + colorize("No active agents", ANSI.gray), "│"];
   }
 
   const sorted = [...running].sort((a, b) =>
     (a.identifier ?? "").localeCompare(b.identifier ?? ""),
   );
 
-  return [
-    "│",
-    header,
-    separator,
-    ...sorted.map((e) => renderRunningRow(e, eventWidth)),
-    "│",
-  ];
+  return ["│", header, separator, ...sorted.map((e) => renderRunningRow(e, eventWidth)), "│"];
 };
 
 if (import.meta.vitest) {

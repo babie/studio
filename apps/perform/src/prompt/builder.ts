@@ -20,7 +20,10 @@ export const buildPrompt = async (
   } catch (err) {
     return {
       type: "Failure",
-      error: { kind: "template-parse-failed", cause: err instanceof Error ? err.message : String(err) },
+      error: {
+        kind: "template-parse-failed",
+        cause: err instanceof Error ? err.message : String(err),
+      },
     };
   }
   try {

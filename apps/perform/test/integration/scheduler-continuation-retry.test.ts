@@ -19,9 +19,14 @@ describe("scheduler continuation retry", () => {
     const todo = {
       id: v.parse(IssueId.schema, "A"),
       identifier: v.parse(IssueIdentifier.schema, "A"),
-      title: "t", description: "",
+      title: "t",
+      description: "",
       state: v.parse(IssueStateName.schema, "Todo"),
-      priority: null, createdAt: null, assigneeId: null, assignedToWorker: true, blockedBy: [],
+      priority: null,
+      createdAt: null,
+      assigneeId: null,
+      assignedToWorker: true,
+      blockedBy: [],
     };
     // Run 1: returns issue. Run 2 (after continuation): returns it again. Run 3+: empty → scheduler exits.
     let calls = 0;
@@ -44,10 +49,19 @@ describe("scheduler continuation retry", () => {
         backend: createMockBackend({ type: "mock" }),
         config: {
           // doingState omitted → ADR-0014 3rd condition off → loop ends with completed=false
-          agent: { backend: { type: "mock" }, maxConcurrentAgents: 1, maxTurns: 1,
-            maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
+          agent: {
+            backend: { type: "mock" },
+            maxConcurrentAgents: 1,
+            maxTurns: 1,
+            maxRetryBackoffMs: 300_000,
+            agentSessionStallTimeoutMs: 1_800_000,
+            maxConcurrentAgentsByState: {},
+          },
           tracker: { kind: "memory", activeStates: ["Todo"], terminalStates: ["Done"], issues: [] },
-          prompt: "Hi", polling: { intervalMs: 100 }, logging: null, workspace: { root },
+          prompt: "Hi",
+          polling: { intervalMs: 100 },
+          logging: null,
+          workspace: { root },
           observability: { dashboardEnabled: false, refreshMs: 1000, renderIntervalMs: 16 },
         } as any,
         logger: { info: () => {}, warn: () => {}, error: () => {} },

@@ -5,10 +5,10 @@ import pino, { type Logger as PinoLogger, type TransportTargetOptions } from "pi
 import type { Logger } from "../orchestrator/orchestrator.js";
 
 export type FileLoggerOptions = Readonly<{
-  path: string;            // absolute path required
-  maxSizeMb: number;       // default 10
-  maxFiles: number;        // default 5
-  prettyStderr?: boolean;  // if true, also pipe to stderr via pino-pretty (PERFORM_DEBUG=1)
+  path: string; // absolute path required
+  maxSizeMb: number; // default 10
+  maxFiles: number; // default 5
+  prettyStderr?: boolean; // if true, also pipe to stderr via pino-pretty (PERFORM_DEBUG=1)
 }>;
 
 export const createFileLogger = (opts: FileLoggerOptions): Logger => {
@@ -43,7 +43,10 @@ export const createFileLogger = (opts: FileLoggerOptions): Logger => {
     warn: (msg: string) => pinoLogger.warn(msg),
     error: (err: unknown) => {
       if (err instanceof Error) {
-        pinoLogger.error({ err: { name: err.name, message: err.message, stack: err.stack } }, err.message);
+        pinoLogger.error(
+          { err: { name: err.name, message: err.message, stack: err.stack } },
+          err.message,
+        );
       } else if (typeof err === "object" && err !== null) {
         pinoLogger.error({ err }, "error object");
       } else {
@@ -62,7 +65,9 @@ if (import.meta.vitest) {
 
   describe("util/file-logger", () => {
     it("rejects relative paths", () => {
-      expect(() => createFileLogger({ path: "log/x.log", maxSizeMb: 10, maxFiles: 5 })).toThrow(/absolute/);
+      expect(() => createFileLogger({ path: "log/x.log", maxSizeMb: 10, maxFiles: 5 })).toThrow(
+        /absolute/,
+      );
     });
 
     it("writes JSON lines containing msg + level", async () => {
@@ -72,9 +77,9 @@ if (import.meta.vitest) {
       const log = createFileLogger({ path, maxSizeMb: 10, maxFiles: 5 });
       log.info("hello world");
       await setTimeoutP(500); // pino-roll flush
-      // pino-roll appends numbers to file names (out.log.1, out.log.2, ...)
+      // pino-roll v4 "Extension Last Format": out.1.log, out.2.log, ...
       const entries = await readdir(dir);
-      const logFile = entries.find((f) => f.startsWith("out.log"));
+      const logFile = entries.find((f) => /^out\.\d+\.log$/.test(f));
       if (!logFile) throw new Error(`no log file in ${dir}: ${entries.join(", ")}`);
       const content = await readFile(join(dir, logFile), "utf-8");
       expect(content).toMatch(/"msg":"hello world"/);

@@ -119,9 +119,7 @@ export const renderBackoffRows = (retrying: ReadonlyArray<RetryEntry>): Readonly
     return ["│  " + colorize("No queued retries", ANSI.gray)];
   }
 
-  return [...retrying]
-    .sort((a, b) => (a.dueInMs ?? 0) - (b.dueInMs ?? 0))
-    .map(formatRetrySummary);
+  return [...retrying].sort((a, b) => (a.dueInMs ?? 0) - (b.dueInMs ?? 0)).map(formatRetrySummary);
 };
 
 // ---------------------------------------------------------------------------

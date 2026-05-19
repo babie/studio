@@ -14,7 +14,11 @@ export type TrackerError =
   | Readonly<{ kind: "github-network"; cause: string }>
   | Readonly<{ kind: "github-project-not-found"; owner: string; number: number }>
   | Readonly<{ kind: "github-status-field-not-found"; fieldName: string }>
-  | Readonly<{ kind: "github-status-option-not-found"; optionName: string; available: ReadonlyArray<string> }>
+  | Readonly<{
+      kind: "github-status-option-not-found";
+      optionName: string;
+      available: ReadonlyArray<string>;
+    }>
   | Readonly<{ kind: "github-no-project-item"; issueIdentifier: string }>
   | Readonly<{ kind: "github-config"; cause: string }>
   | Readonly<{ kind: "unsupported-tracker-kind"; kind_: string }>
@@ -28,7 +32,11 @@ if (import.meta.vitest) {
       expect(e.kind).toBe("github-http");
     });
     it("discriminates tracker-timeout", () => {
-      const e: TrackerError = { kind: "tracker-timeout", operation: "fetchCandidates", timeoutMs: 15000 };
+      const e: TrackerError = {
+        kind: "tracker-timeout",
+        operation: "fetchCandidates",
+        timeoutMs: 15000,
+      };
       expect(e.kind).toBe("tracker-timeout");
     });
   });

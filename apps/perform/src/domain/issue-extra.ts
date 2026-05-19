@@ -1,5 +1,4 @@
-export type IssueExtra =
-  | Readonly<{ kind: "github"; projectId: string; projectItemId: string }>;
+export type IssueExtra = Readonly<{ kind: "github"; projectId: string; projectItemId: string }>;
 
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest;

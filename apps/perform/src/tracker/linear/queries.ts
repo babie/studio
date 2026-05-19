@@ -132,15 +132,19 @@ const IssueNodeSchema = v.object({
   assignee: v.nullable(v.object({ id: v.string() })),
   // inverseRelations is only present in LIST_ISSUES_QUERY / LIST_ISSUES_BY_ASSIGNEE_QUERY.
   // LIST_ISSUES_BY_IDS_QUERY (used for reconcile) omits it for efficiency.
-  inverseRelations: v.optional(v.object({
-    nodes: v.array(v.object({
-      type: v.string(),
-      issue: v.object({
-        id: v.string(),
-        state: v.object({ name: v.string() }),
-      }),
-    })),
-  })),
+  inverseRelations: v.optional(
+    v.object({
+      nodes: v.array(
+        v.object({
+          type: v.string(),
+          issue: v.object({
+            id: v.string(),
+            state: v.object({ name: v.string() }),
+          }),
+        }),
+      ),
+    }),
+  ),
 });
 export type LinearIssueNode = v.InferOutput<typeof IssueNodeSchema>;
 
@@ -206,9 +210,17 @@ if (import.meta.vitest) {
           issues: {
             nodes: [
               {
-                id: "id1", identifier: "CYFY-5", title: "t", description: "d", state: { name: "Todo" },
-                priority: 2, createdAt: "2026-01-01T00:00:00Z", assignee: { id: "user_1" },
-                inverseRelations: { nodes: [{ type: "blocks", issue: { id: "id2", state: { name: "In Progress" } } }] },
+                id: "id1",
+                identifier: "CYFY-5",
+                title: "t",
+                description: "d",
+                state: { name: "Todo" },
+                priority: 2,
+                createdAt: "2026-01-01T00:00:00Z",
+                assignee: { id: "user_1" },
+                inverseRelations: {
+                  nodes: [{ type: "blocks", issue: { id: "id2", state: { name: "In Progress" } } }],
+                },
               },
             ],
             pageInfo: { hasNextPage: false, endCursor: null },
@@ -224,8 +236,14 @@ if (import.meta.vitest) {
           issues: {
             nodes: [
               {
-                id: "id1", identifier: "CYFY-5", title: "t", description: null, state: { name: "Todo" },
-                priority: null, createdAt: "2026-01-01T00:00:00Z", assignee: null,
+                id: "id1",
+                identifier: "CYFY-5",
+                title: "t",
+                description: null,
+                state: { name: "Todo" },
+                priority: null,
+                createdAt: "2026-01-01T00:00:00Z",
+                assignee: null,
                 inverseRelations: { nodes: [] },
               },
             ],
@@ -242,8 +260,14 @@ if (import.meta.vitest) {
           issues: {
             nodes: [
               {
-                id: "id1", identifier: "CYFY-5", title: "t", description: "d", state: { name: "Todo" },
-                priority: null, createdAt: "2026-01-01T00:00:00Z", assignee: null,
+                id: "id1",
+                identifier: "CYFY-5",
+                title: "t",
+                description: "d",
+                state: { name: "Todo" },
+                priority: null,
+                createdAt: "2026-01-01T00:00:00Z",
+                assignee: null,
               },
             ],
           },

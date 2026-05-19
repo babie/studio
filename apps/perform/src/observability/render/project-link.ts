@@ -31,8 +31,7 @@ export type ProjectLinkInput = Readonly<
   | { kind: "github"; projectOwner: string | null; projectNumber: number | null }
 >;
 
-const linearProjectUrl = (slug: string): string =>
-  `https://linear.app/project/${slug}/issues`;
+const linearProjectUrl = (slug: string): string => `https://linear.app/project/${slug}/issues`;
 
 const githubProjectUrl = (owner: string, number: number): string =>
   `https://github.com/orgs/${owner}/projects/${number}`;
@@ -239,9 +238,7 @@ if (import.meta.vitest) {
         nextPollInMs: 0,
         pollIntervalMs: 5000,
       });
-      expect(line).toBe(
-        "\x1b[1m│ Next refresh: \x1b[0m\x1b[36mchecking now…\x1b[0m",
-      );
+      expect(line).toBe("\x1b[1m│ Next refresh: \x1b[0m\x1b[36mchecking now…\x1b[0m");
       // Ensure it's the Unicode ellipsis (…), not three ASCII dots (...)
       expect(line).toContain("checking now…");
       expect(line).not.toContain("checking now...");

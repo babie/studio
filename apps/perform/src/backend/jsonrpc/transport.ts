@@ -92,7 +92,10 @@ export const subprocessTransport = (
       stdio: ["pipe", "pipe", "pipe"],
     });
   } catch (err) {
-    return { type: "Failure", error: spawnFailed(spawnArgs.command, err instanceof Error ? err.message : String(err)) };
+    return {
+      type: "Failure",
+      error: spawnFailed(spawnArgs.command, err instanceof Error ? err.message : String(err)),
+    };
   }
 
   // Always register an error handler BEFORE any synchronous returns to prevent
@@ -196,7 +199,10 @@ if (import.meta.vitest) {
       const node = process.execPath;
       const r = subprocessTransport({
         command: node,
-        args: ["-e", 'process.stdout.write("hello\\nworld\\n"); process.stderr.write("oops"); process.exit(0);'],
+        args: [
+          "-e",
+          'process.stdout.write("hello\\nworld\\n"); process.stderr.write("oops"); process.exit(0);',
+        ],
         cwd: process.cwd(),
         env: process.env,
       });

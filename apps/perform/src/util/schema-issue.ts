@@ -24,9 +24,7 @@ const segmentToString = (segment: unknown): string => {
  *  path is absent or empty.  Accepts both StandardSchemaV1.Issue and valibot
  *  BaseIssue without a cast at the call site. */
 export const formatIssuePath = (issue: IssueWithPath): string =>
-  issue.path && issue.path.length > 0
-    ? issue.path.map(segmentToString).join(".")
-    : "<root>";
+  issue.path && issue.path.length > 0 ? issue.path.map(segmentToString).join(".") : "<root>";
 
 if (import.meta.vitest) {
   const { describe, it, expect } = import.meta.vitest;

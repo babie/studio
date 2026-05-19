@@ -15,9 +15,14 @@ describe("scheduler parallel dispatch", () => {
     const mk = (id: string, state: string) => ({
       id: v.parse(IssueId.schema, id),
       identifier: v.parse(IssueIdentifier.schema, id),
-      title: id, description: "",
+      title: id,
+      description: "",
       state: v.parse(IssueStateName.schema, state),
-      priority: null, createdAt: null, assigneeId: null, assignedToWorker: true, blockedBy: [],
+      priority: null,
+      createdAt: null,
+      assigneeId: null,
+      assignedToWorker: true,
+      blockedBy: [],
     });
     const a = mk("A", "Todo");
     const b = mk("B", "Todo");
@@ -31,7 +36,8 @@ describe("scheduler parallel dispatch", () => {
         return ok(candCalls === 1 ? [a, b] : []);
       },
       fetchIssuesByStates: async () => ok([]),
-      fetchIssueStatesByIds: async (ids) => ok(ids.map((id) => (String(id) === "A" ? doneA : doneB))),
+      fetchIssueStatesByIds: async (ids) =>
+        ok(ids.map((id) => (String(id) === "A" ? doneA : doneB))),
       createComment: async () => ok(undefined),
       updateIssueState: async () => ok(undefined),
     };
@@ -44,11 +50,24 @@ describe("scheduler parallel dispatch", () => {
       tracker,
       backend: createMockBackend({ type: "mock", delayMs: 50 }),
       config: {
-        agent: { backend: { type: "mock" }, maxConcurrentAgents: 2, maxTurns: 1,
-          maxRetryBackoffMs: 300_000, agentSessionStallTimeoutMs: 1_800_000, maxConcurrentAgentsByState: {} },
-        tracker: { kind: "memory", activeStates: ["Todo"], terminalStates: ["Done"],
-          doingState: "In Progress", doneState: "Done", issues: [] },
-        prompt: "Hi", polling: { intervalMs: 200 },
+        agent: {
+          backend: { type: "mock" },
+          maxConcurrentAgents: 2,
+          maxTurns: 1,
+          maxRetryBackoffMs: 300_000,
+          agentSessionStallTimeoutMs: 1_800_000,
+          maxConcurrentAgentsByState: {},
+        },
+        tracker: {
+          kind: "memory",
+          activeStates: ["Todo"],
+          terminalStates: ["Done"],
+          doingState: "In Progress",
+          doneState: "Done",
+          issues: [],
+        },
+        prompt: "Hi",
+        polling: { intervalMs: 200 },
         logging: null,
         workspace: { root },
         observability: { dashboardEnabled: false, refreshMs: 1000, renderIntervalMs: 16 },

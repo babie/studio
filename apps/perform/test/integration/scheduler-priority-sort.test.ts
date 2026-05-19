@@ -8,18 +8,25 @@ describe("scheduler priority sort", () => {
     const mk = (id: string, priority: 1 | 2 | 3 | 4 | null) => ({
       id: v.parse(IssueId.schema, id),
       identifier: v.parse(IssueIdentifier.schema, id),
-      title: "t", description: "",
+      title: "t",
+      description: "",
       state: v.parse(IssueStateName.schema, "Todo"),
       priority: priority !== null ? v.parse(PriorityValue.schema, priority) : null,
-      createdAt: null, assigneeId: null, assignedToWorker: true, blockedBy: [],
+      createdAt: null,
+      assigneeId: null,
+      assignedToWorker: true,
+      blockedBy: [],
     });
     const issues = [mk("X", null), mk("D", 4), mk("A", 1), mk("C", 3), mk("B", 2)];
     const out = selectDispatchable({
       candidates: issues,
       activeStates: [v.parse(IssueStateName.schema, "Todo")],
       terminalStates: [v.parse(IssueStateName.schema, "Done")],
-      running: new Set(), claimed: new Set(),
-      maxConcurrentAgents: 10, maxConcurrentAgentsByState: {}, runningCountByState: {},
+      running: new Set(),
+      claimed: new Set(),
+      maxConcurrentAgents: 10,
+      maxConcurrentAgentsByState: {},
+      runningCountByState: {},
     });
     expect(out.map((i) => i.identifier)).toEqual(["A", "B", "C", "D", "X"]);
   });

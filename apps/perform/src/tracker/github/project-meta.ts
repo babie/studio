@@ -22,7 +22,9 @@ export type GithubProjectMeta = Readonly<{
   viewerLogin: string;
 }>;
 
-type ProjectInner = v.InferOutput<typeof ProjectMetaUserResponseSchema>["data"]["user"] extends infer U
+type ProjectInner = v.InferOutput<
+  typeof ProjectMetaUserResponseSchema
+>["data"]["user"] extends infer U
   ? U extends null
     ? never
     : U extends { projectV2: infer P }
@@ -284,9 +286,7 @@ if (import.meta.vitest) {
         ...baseConfig,
         doingState: "Wonky",
       };
-      const fetchFn = makeFetch([
-        { json: { data: { user: { projectV2: projectV2OK } } } },
-      ]);
+      const fetchFn = makeFetch([{ json: { data: { user: { projectV2: projectV2OK } } } }]);
       const r = await warmupGithubProjectMeta(baseDeps(fetchFn), cfg);
       if (r.type !== "Failure") throw new Error("expected failure");
       expect(r.error.kind).toBe("github-status-option-not-found");

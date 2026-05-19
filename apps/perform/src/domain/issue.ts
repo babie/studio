@@ -124,16 +124,19 @@ if (import.meta.vitest) {
       const issue: Issue = {
         id: v.parse(IssueId.schema, "M-1"),
         identifier: v.parse(IssueIdentifier.schema, "M-1"),
-        title: "t", description: "d",
+        title: "t",
+        description: "d",
         state: v.parse(IssueStateName.schema, "Todo"),
         priority: v.parse(PriorityValue.schema, 2),
         createdAt: new Date("2026-05-01T00:00:00Z"),
         assigneeId: "user_42",
         assignedToWorker: true,
-        blockedBy: [{
-          id: v.parse(IssueId.schema, "M-2"),
-          state: v.parse(IssueStateName.schema, "In Progress"),
-        }],
+        blockedBy: [
+          {
+            id: v.parse(IssueId.schema, "M-2"),
+            state: v.parse(IssueStateName.schema, "In Progress"),
+          },
+        ],
       };
       expect(issue.priority).toBe(2);
       expect(issue.blockedBy.length).toBe(1);
