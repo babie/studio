@@ -161,4 +161,16 @@ fi
 
 echo "Agent CLI installation complete."
 
+# ============================================================
+# 9. Claude Code 用の初期ファイルを ~/.claude/ に配置
+# ============================================================
+# .devcontainer/.claude/ にあるテンプレートを ~/.claude/ にコピー。
+# 既存ファイルは尊重する (cp -n) ので、login 後のユーザ変更や
+# postCreateCommand.sh の手動再実行でも上書きしない。
+if [ -d /workspace/.devcontainer/.claude ]; then
+  echo "Seeding ~/.claude/ from .devcontainer/.claude/..."
+  mkdir -p ~/.claude
+  cp -Rn /workspace/.devcontainer/.claude/. ~/.claude/
+fi
+
 echo "Setup complete!"
